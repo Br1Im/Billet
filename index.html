@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventTickets - Билеты на мероприятия</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="animated-bg">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <svg class="logo-icon" viewBox="0 0 40 40" fill="none">
+                        <path d="M20 5L25 15H35L27 22L30 32L20 26L10 32L13 22L5 15H15L20 5Z" fill="url(#logo-gradient)"/>
+                        <defs>
+                            <linearGradient id="logo-gradient" x1="5" y1="5" x2="35" y2="32">
+                                <stop offset="0%" stop-color="#fff"/>
+                                <stop offset="100%" stop-color="#f0f8ff"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <h1>EventTickets</h1>
+                </div>
+                <nav class="nav">
+                    <div class="nav-menu">
+                        <a href="index.html" class="nav-link active">
+                            <span class="nav-icon">🎫</span>
+                            <span class="nav-text">События</span>
+                        </a>
+                        <a href="admin.html" class="nav-link">
+                            <span class="nav-icon">🔧</span>
+                            <span class="nav-text">Админ</span>
+                        </a>
+                    </div>
+                    <div class="language-switcher">
+                        <button class="lang-btn active" data-lang="ru">
+                            <span class="flag">🇷🇺</span>
+                        </button>
+                        <button class="lang-btn" data-lang="fr">
+                            <span class="flag">🇫🇷</span>
+                        </button>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <section class="hero">
+            <div class="hero-particles"></div>
+            <div class="container">
+                <div class="hero-content">
+                    <div class="hero-badge">
+                        <span class="badge-icon">✨</span>
+                        <span class="badge-text" data-translate="newEvents">Новые мероприятия</span>
+                    </div>
+                    <h2 class="hero-title" data-translate="heroTitle">Актуальные мероприятия</h2>
+                    <p class="hero-subtitle" data-translate="heroSubtitle">Выберите интересующее вас событие и забронируйте билеты</p>
+                    <div class="hero-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">500+</div>
+                            <div class="stat-label" data-translate="stats1">Мероприятий</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">10K+</div>
+                            <div class="stat-label" data-translate="stats2">Гостей</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">98%</div>
+                            <div class="stat-label" data-translate="stats3">Довольных</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="events">
+            <div class="container">
+                <div class="section-header">
+                    <h3 class="section-title" data-translate="upcomingEvents">Предстоящие события</h3>
+                    <div class="filter-tabs">
+                        <button class="filter-tab active" data-filter="all" data-translate="filterAll">Все</button>
+                        <button class="filter-tab" data-filter="music" data-translate="filterMusic">Музыка</button>
+                        <button class="filter-tab" data-filter="theater" data-translate="filterTheater">Театр</button>
+                        <button class="filter-tab" data-filter="art" data-translate="filterArt">Искусство</button>
+                    </div>
+                </div>
+                <div class="events-grid" id="eventsGrid">
+                    <!-- События будут загружены динамически -->
+                </div>
+            </div>
+        </section>
+
+        <section class="features">
+            <div class="container">
+                <h3 class="section-title" data-translate="whyChooseUs">Почему выбирают нас</h3>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🎫</div>
+                        <h4 data-translate="feature1Title">Простое бронирование</h4>
+                        <p data-translate="feature1Text">Забронируйте билеты за пару кликов</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">💳</div>
+                        <h4 data-translate="feature2Title">Удобная оплата</h4>
+                        <p data-translate="feature2Text">Перевод или наличные на выбор</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📱</div>
+                        <h4 data-translate="feature3Title">Электронные билеты</h4>
+                        <p data-translate="feature3Text">QR-код на вашем телефоне</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔒</div>
+                        <h4 data-translate="feature4Title">Безопасность</h4>
+                        <p data-translate="feature4Text">Защита ваших данных</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>EventTickets</h4>
+                    <p data-translate="footerText">Ваш надежный партнер в мире событий</p>
+                </div>
+                <div class="footer-section">
+                    <h4 data-translate="contactsTitle">Контакты</h4>
+                    <p>Email: info@eventtickets.com</p>
+                    <p>Тел: +7 (999) 123-45-67</p>
+                </div>
+                <div class="footer-section">
+                    <h4 data-translate="socialTitle">Социальные сети</h4>
+                    <div class="social-links">
+                        <a href="#" class="social-link">📘</a>
+                        <a href="#" class="social-link">📷</a>
+                        <a href="#" class="social-link">🐦</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 EventTickets. <span data-translate="copyright">Все права защищены.</span></p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

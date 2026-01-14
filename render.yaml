@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: eventtickets
+    env: static
+    buildCommand: echo "No build required"
+    staticPublishPath: .
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: public, max-age=3600
+      - path: /
+        name: Cache-Control
+        value: public, max-age=0, must-revalidate
