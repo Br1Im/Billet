@@ -585,8 +585,28 @@ function loadAdminGuests() {
 
 // Настройка модального окна события
 function setupEventModal() {
-    document.getElementById('addEventBtn').addEventListener('click', openEventModal);
-    document.getElementById('eventForm').addEventListener('submit', handleEventSubmit);
+    const addBtn = document.getElementById('addEventBtn');
+    const eventForm = document.getElementById('eventForm');
+    
+    if (!addBtn) {
+        console.error('Кнопка addEventBtn не найдена!');
+        return;
+    }
+    
+    if (!eventForm) {
+        console.error('Форма eventForm не найдена!');
+        return;
+    }
+    
+    console.log('Настройка обработчиков модального окна...');
+    
+    addBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        console.log('Клик по кнопке добавления мероприятия');
+        openEventModal();
+    });
+    
+    eventForm.addEventListener('submit', handleEventSubmit);
     
     // Добавляем первый тип билета по умолчанию
     addTicketType();
@@ -594,9 +614,21 @@ function setupEventModal() {
 
 // Открытие модального окна события
 function openEventModal(eventId = null) {
+    console.log('Открытие модального окна, eventId:', eventId);
+    
     currentEditingEvent = eventId;
     const modal = document.getElementById('eventModal');
     const title = document.getElementById('eventModalTitle');
+    
+    if (!modal) {
+        console.error('Модальное окно eventModal не найдено!');
+        return;
+    }
+    
+    if (!title) {
+        console.error('Заголовок eventModalTitle не найден!');
+        return;
+    }
     
     if (eventId) {
         title.textContent = 'Редактировать мероприятие';
@@ -604,12 +636,20 @@ function openEventModal(eventId = null) {
         fillEventForm(event);
     } else {
         title.textContent = 'Добавить мероприятие';
-        document.getElementById('eventForm').reset();
+        const eventForm = document.getElementById('eventForm');
+        if (eventForm) {
+            eventForm.reset();
+        }
+        
         // Очищаем типы билетов и добавляем один пустой
-        document.getElementById('ticketTypes').innerHTML = '';
-        addTicketType();
+        const ticketTypes = document.getElementById('ticketTypes');
+        if (ticketTypes) {
+            ticketTypes.innerHTML = '';
+            addTicketType();
+        }
     }
     
+    console.log('Показываем модальное окно');
     modal.classList.add('active');
 }
 
@@ -639,7 +679,14 @@ function fillEventForm(event) {
 
 // Добавление типа билета
 function addTicketType(type = '', price = '') {
+    console.log('Добавление типа билета:', type, price);
+    
     const container = document.getElementById('ticketTypes');
+    if (!container) {
+        console.error('Контейнер ticketTypes не найден!');
+        return;
+    }
+    
     const ticketDiv = document.createElement('div');
     ticketDiv.className = 'ticket-type-form';
     
@@ -652,6 +699,7 @@ function addTicketType(type = '', price = '') {
     `;
     
     container.appendChild(ticketDiv);
+    console.log('Тип билета добавлен');
 }
 
 // Удаление типа билета
