@@ -1,67 +1,32 @@
 // Глобальные переменные
 let events = [];
-let settings = {};
+let settings = {
+    siteName: "EventTickets",
+    logoUrl: "",
+    bankDetails: {
+        bankName: "Сбербанк России",
+        iban: "RU1234567890123456789012",
+        bic: "SBERRU2P",
+        recipient: "ООО «EventTickets»"
+    }
+};
 
-// Загрузка данных из JSON файлов и localStorage
-async function loadData() {
-    try {
-        // Сначала пробуем загрузить из localStorage (приоритет)
-        const storedEvents = localStorage.getItem('eventTicketsEvents');
-        if (storedEvents) {
+// Инициализация данных
+function initializeData() {
+    // Загружаем мероприятия из localStorage или используем данные по умолчанию
+    const storedEvents = localStorage.getItem('eventTicketsEvents');
+    if (storedEvents) {
+        try {
             const parsedEvents = JSON.parse(storedEvents);
-            // Конвертируем в формат клиентской части
-            events = parsedEvents.map(event => ({
-                id: event.id,
-                title: {
-                    ru: event.title || event.titleRu || 'Мероприятие',
-                    fr: event.titleFr || event.title || 'Événement'
-                },
-                date: event.date,
-                time: event.time,
-                location: {
-                    ru: event.location || event.locationRu || 'Место проведения',
-                    fr: event.locationFr || event.location || 'Lieu'
-                },
-                description: {
-                    ru: event.description || event.descriptionRu || 'Описание мероприятия',
-                    fr: event.descriptionFr || event.description || 'Description de l\'événement'
-                },
-                category: event.category || 'other',
-                image: event.image || '🎪',
-                tickets: event.tickets.map(ticket => ({
-                    id: ticket.id || ticket.type.toLowerCase().replace(/\s+/g, '_'),
-                    type: {
-                        ru: ticket.type || 'Билет',
-                        fr: ticket.typeFr || ticket.type || 'Billet'
-                    },
-                    price: ticket.price
-                }))
-            }));
+            events = parsedEvents;
             console.log('Мероприятия загружены из localStorage:', events);
-        } else {
-            // Если в localStorage нет данных, загружаем из JSON
-            const eventsResponse = await fetch('./data/events.json');
-            if (eventsResponse.ok) {
-                events = await eventsResponse.json();
-                console.log('Мероприятия загружены из JSON:', events);
-            } else {
-                console.warn('Не удалось загрузить events.json, используем данные по умолчанию');
-                events = getDefaultEvents();
-            }
+        } catch (error) {
+            console.error('Ошибка парсинга localStorage:', error);
+            events = getDefaultEvents();
         }
-
-        // Загружаем настройки
-        const settingsResponse = await fetch('./data/settings.json');
-        if (settingsResponse.ok) {
-            settings = await settingsResponse.json();
-        } else {
-            console.warn('Не удалось загрузить settings.json, используем настройки по умолчанию');
-            settings = getDefaultSettings();
-        }
-    } catch (error) {
-        console.error('Ошибка загрузки данных:', error);
+    } else {
         events = getDefaultEvents();
-        settings = getDefaultSettings();
+        console.log('Используются мероприятия по умолчанию:', events);
     }
 }
 
@@ -255,9 +220,9 @@ let currentEvent = null;
 let cart = {};
 
 // Инициализация приложения
-document.addEventListener('DOMContentLoaded', async function() {
-    // Загружаем данные из JSON файлов
-    await loadData();
+document.addEventListener('DOMContentLoaded', function() {
+    // Инициализируем данные
+    initializeData();
     
     // Устанавливаем сохраненный язык
     setInitialLanguage();

@@ -9,7 +9,24 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="admin-layout">
+    <!-- Форма входа -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-form">
+            <h2>🔐 Вход в админ-панель</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="adminPassword">Пароль:</label>
+                    <input type="password" id="adminPassword" class="form-control" placeholder="Введите пароль" required>
+                </div>
+                <button type="submit" class="btn-primary">Войти</button>
+                <div class="login-hint">
+                    <small>Пароль по умолчанию: <code>admin123</code></small>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="admin-layout" id="adminPanel" style="display: none;">
         <aside class="admin-sidebar">
             <div class="admin-logo">
                 <h2>EventTickets</h2>
@@ -46,6 +63,7 @@
                 <h1 id="sectionTitle">Управление мероприятиями</h1>
                 <div class="admin-actions">
                     <button class="btn-primary" id="addEventBtn">+ Добавить мероприятие</button>
+                    <button class="btn-secondary" onclick="logout()">🚪 Выйти</button>
                 </div>
             </header>
 
@@ -181,6 +199,8 @@
             </form>
         </div>
     </div>
+
+    </div> <!-- Закрытие adminPanel -->
 
     <script src="admin-script.js"></script>
 </body>

@@ -1,51 +1,110 @@
 // Глобальные переменные для админ-панели
 let adminEvents = [];
 let adminSettings = {};
+let isAuthenticated = false;
 
-// Загрузка данных из JSON файлов
-async function loadAdminData() {
-    try {
-        // Загружаем мероприятия
-        const eventsResponse = await fetch('./data/events.json');
-        if (eventsResponse.ok) {
-            const events = await eventsResponse.json();
-            adminEvents = events.map(event => ({
-                id: event.id,
-                title: event.title.ru,
-                titleFr: event.title.fr,
-                date: event.date,
-                time: event.time,
-                location: event.location.ru,
-                locationFr: event.location.fr,
-                description: event.description.ru,
-                descriptionFr: event.description.fr,
-                category: event.category,
-                image: event.image,
-                tickets: event.tickets.map(ticket => ({
-                    id: ticket.id,
-                    type: ticket.type.ru,
-                    typeFr: ticket.type.fr,
-                    price: ticket.price
-                }))
-            }));
-        } else {
-            console.warn('Не удалось загрузить events.json');
-            adminEvents = getDefaultAdminEvents();
-        }
+// Настройки аутентификации
+const ADMIN_PASSWORD = 'admin123'; // Можно изменить на любой пароль
 
-        // Загружаем настройки
-        const settingsResponse = await fetch('./data/settings.json');
-        if (settingsResponse.ok) {
-            adminSettings = await settingsResponse.json();
-        } else {
-            console.warn('Не удалось загрузить settings.json');
-            adminSettings = getDefaultSettings();
+// Проверка аутентификации
+function checkAuthentication() {
+    const savedAuth = localStorage.getItem('adminAuthenticated');
+    const authTime = localStorage.getItem('adminAuthTime');
+    
+    // Проверяем, прошло ли более 24 часов с момента входа
+    if (savedAuth === 'true' && authTime) {
+        const now = new Date().getTime();
+        const authTimestamp = parseInt(authTime);
+        const hoursPassed = (now - authTimestamp) / (1000 * 60 * 60);
+        
+        if (hoursPassed < 24) {
+            isAuthenticated = true;
+            showAdminPanel();
+            return;
         }
-    } catch (error) {
-        console.error('Ошибка загрузки данных:', error);
-        adminEvents = getDefaultAdminEvents();
-        adminSettings = getDefaultSettings();
     }
+    
+    // Если не аутентифицирован, показываем форму входа
+    showLoginForm();
+}
+
+// Показать форму входа
+function showLoginForm() {
+    document.getElementById('loginOverlay').style.display = 'flex';
+    document.getElementById('adminPanel').style.display = 'none';
+}
+
+// Показать админ-панель
+function showAdminPanel() {
+    document.getElementById('loginOverlay').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'flex';
+    document.getElementById('adminPanel').classList.add('authenticated');
+}
+
+// Обработка входа
+function handleLogin(event) {
+    event.preventDefault();
+    
+    const password = document.getElementById('adminPassword').value;
+    
+    if (password === ADMIN_PASSWORD) {
+        isAuthenticated = true;
+        
+        // Сохраняем аутентификацию на 24 часа
+        localStorage.setItem('adminAuthenticated', 'true');
+        localStorage.setItem('adminAuthTime', new Date().getTime().toString());
+        
+        showAdminPanel();
+        
+        // Инициализируем админ-панель
+        initializeAdminPanel();
+        
+        showNotification('Добро пожаловать в админ-панель!', 'success');
+    } else {
+        showNotification('Неверный пароль!', 'error');
+        document.getElementById('adminPassword').value = '';
+        document.getElementById('adminPassword').focus();
+    }
+}
+
+// Выход из админ-панели
+function logout() {
+    if (confirm('Вы уверены, что хотите выйти?')) {
+        isAuthenticated = false;
+        localStorage.removeItem('adminAuthenticated');
+        localStorage.removeItem('adminAuthTime');
+        showLoginForm();
+        showNotification('Вы вышли из админ-панели', 'info');
+    }
+}
+
+// Инициализация админ-панели после входа
+async function initializeAdminPanel() {
+    // Загружаем данные из JSON файлов
+    await loadAdminData();
+    
+    // Загружаем мероприятия из localStorage (приоритет над JSON)
+    loadEventsFromStorage();
+    
+    setupAdminNavigation();
+    loadAdminEvents();
+    loadAdminOrders();
+    setupEventModal();
+    loadEventFilters();
+    loadSettings();
+    updateDashboardStats();
+    initCursorFollower();
+    
+    // Обновляем статистику каждые 30 секунд
+    setInterval(updateDashboardStats, 30000);
+}
+
+// Загрузка данных (теперь без JSON файлов)
+async function loadAdminData() {
+    // Используем встроенные данные по умолчанию
+    adminEvents = getDefaultAdminEvents();
+    adminSettings = getDefaultSettings();
+    console.log('Используются встроенные данные админки');
 }
 
 // Данные по умолчанию для админ-панели
@@ -262,24 +321,12 @@ function deleteOrder(orderId) {
 let currentEditingEvent = null;
 
 // Инициализация админ-панели
-document.addEventListener('DOMContentLoaded', async function() {
-    // Загружаем данные из JSON файлов
-    await loadAdminData();
+document.addEventListener('DOMContentLoaded', function() {
+    // Настраиваем обработчик формы входа
+    document.getElementById('loginForm').addEventListener('submit', handleLogin);
     
-    // Загружаем мероприятия из localStorage (приоритет над JSON)
-    loadEventsFromStorage();
-    
-    setupAdminNavigation();
-    loadAdminEvents();
-    loadAdminOrders();
-    setupEventModal();
-    loadEventFilters();
-    loadSettings();
-    updateDashboardStats();
-    initCursorFollower();
-    
-    // Обновляем статистику каждые 30 секунд
-    setInterval(updateDashboardStats, 30000);
+    // Проверяем аутентификацию
+    checkAuthentication();
 });
 
 // Инициализация следящего курсора
