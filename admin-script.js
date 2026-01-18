@@ -103,7 +103,76 @@ function getDefaultSettings() {
     };
 }
 
-// Функции для работы с заказами из localStorage
+// Функции для работы с мероприятиями
+function saveEventsToStorage() {
+    try {
+        // Конвертируем мероприятия в формат для клиентской части
+        const clientEvents = adminEvents.map(event => ({
+            id: event.id,
+            title: {
+                ru: event.title || 'Мероприятие',
+                fr: event.titleFr || event.title || 'Événement'
+            },
+            date: event.date,
+            time: event.time,
+            location: {
+                ru: event.location || 'Место проведения',
+                fr: event.locationFr || event.location || 'Lieu'
+            },
+            description: {
+                ru: event.description || 'Описание мероприятия',
+                fr: event.descriptionFr || event.description || 'Description de l\'événement'
+            },
+            category: event.category || 'other',
+            image: event.image || '🎪',
+            tickets: event.tickets.map(ticket => ({
+                id: ticket.id || ticket.type.toLowerCase().replace(/\s+/g, '_'),
+                type: {
+                    ru: ticket.type || 'Билет',
+                    fr: ticket.typeFr || ticket.type || 'Billet'
+                },
+                price: ticket.price
+            }))
+        }));
+        
+        localStorage.setItem('eventTicketsEvents', JSON.stringify(clientEvents));
+        console.log('Мероприятия сохранены в localStorage для клиентской части:', clientEvents);
+    } catch (error) {
+        console.error('Ошибка сохранения мероприятий:', error);
+    }
+}
+
+function loadEventsFromStorage() {
+    try {
+        const storedEvents = localStorage.getItem('eventTicketsEvents');
+        if (storedEvents) {
+            const events = JSON.parse(storedEvents);
+            // Конвертируем в формат админки
+            adminEvents = events.map(event => ({
+                id: event.id,
+                title: typeof event.title === 'object' ? event.title.ru : event.title,
+                titleFr: typeof event.title === 'object' ? event.title.fr : event.title,
+                date: event.date,
+                time: event.time,
+                location: typeof event.location === 'object' ? event.location.ru : event.location,
+                locationFr: typeof event.location === 'object' ? event.location.fr : event.location,
+                description: typeof event.description === 'object' ? event.description.ru : event.description,
+                descriptionFr: typeof event.description === 'object' ? event.description.fr : event.description,
+                category: event.category || 'other',
+                image: event.image || '🎪',
+                tickets: event.tickets.map(ticket => ({
+                    id: ticket.id || ticket.type.toLowerCase().replace(/\s+/g, '_'),
+                    type: typeof ticket.type === 'object' ? ticket.type.ru : ticket.type,
+                    typeFr: typeof ticket.type === 'object' ? ticket.type.fr : ticket.type,
+                    price: ticket.price
+                }))
+            }));
+            console.log('Мероприятия загружены из localStorage:', adminEvents);
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки мероприятий:', error);
+    }
+}
 function getAllOrders() {
     try {
         return JSON.parse(localStorage.getItem('eventTicketsOrders')) || [];
@@ -196,6 +265,9 @@ let currentEditingEvent = null;
 document.addEventListener('DOMContentLoaded', async function() {
     // Загружаем данные из JSON файлов
     await loadAdminData();
+    
+    // Загружаем мероприятия из localStorage (приоритет над JSON)
+    loadEventsFromStorage();
     
     setupAdminNavigation();
     loadAdminEvents();
@@ -690,16 +762,25 @@ function handleEventSubmit(e) {
         const name = form.querySelector('.ticket-type-name').value;
         const price = parseInt(form.querySelector('.ticket-type-price').value);
         if (name && price) {
-            ticketTypes.push({ type: name, price: price });
+            ticketTypes.push({ 
+                id: name.toLowerCase().replace(/\s+/g, '_'),
+                type: name, 
+                typeFr: name, // Пока одинаковые, можно будет добавить перевод
+                price: price 
+            });
         }
     });
     
     const eventData = {
         title: document.getElementById('eventTitle').value,
+        titleFr: document.getElementById('eventTitle').value, // Пока одинаковые
         date: document.getElementById('eventDate').value,
         time: document.getElementById('eventTime').value,
         location: document.getElementById('eventLocation').value,
+        locationFr: document.getElementById('eventLocation').value, // Пока одинаковые
         description: document.getElementById('eventDescription').value,
+        descriptionFr: document.getElementById('eventDescription').value, // Пока одинаковые
+        category: 'other', // По умолчанию
         image: document.getElementById('eventImage').value || '🎪',
         tickets: ticketTypes
     };
@@ -710,16 +791,19 @@ function handleEventSubmit(e) {
         adminEvents[eventIndex] = { ...adminEvents[eventIndex], ...eventData };
     } else {
         // Добавление нового события
-        const newId = Math.max(...adminEvents.map(e => e.id)) + 1;
+        const newId = adminEvents.length > 0 ? Math.max(...adminEvents.map(e => e.id)) + 1 : 1;
         adminEvents.push({ id: newId, ...eventData });
     }
+    
+    // Сохраняем в localStorage для синхронизации с клиентской частью
+    saveEventsToStorage();
     
     loadAdminEvents();
     loadEventFilters();
     closeEventModal();
     
     // Показываем уведомление об успехе
-    showNotification('Мероприятие успешно сохранено!', 'success');
+    showNotification('Мероприятие успешно сохранено и синхронизировано!', 'success');
 }
 
 // Редактирование события
@@ -731,9 +815,13 @@ function editEvent(eventId) {
 function deleteEvent(eventId) {
     if (confirm('Вы уверены, что хотите удалить это мероприятие?')) {
         adminEvents = adminEvents.filter(e => e.id !== eventId);
+        
+        // Сохраняем изменения в localStorage
+        saveEventsToStorage();
+        
         loadAdminEvents();
         loadEventFilters();
-        showNotification('Мероприятие удалено', 'success');
+        showNotification('Мероприятие удалено и синхронизировано', 'success');
     }
 }
 

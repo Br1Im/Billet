@@ -2,16 +2,52 @@
 let events = [];
 let settings = {};
 
-// Загрузка данных из JSON файлов
+// Загрузка данных из JSON файлов и localStorage
 async function loadData() {
     try {
-        // Загружаем мероприятия
-        const eventsResponse = await fetch('./data/events.json');
-        if (eventsResponse.ok) {
-            events = await eventsResponse.json();
+        // Сначала пробуем загрузить из localStorage (приоритет)
+        const storedEvents = localStorage.getItem('eventTicketsEvents');
+        if (storedEvents) {
+            const parsedEvents = JSON.parse(storedEvents);
+            // Конвертируем в формат клиентской части
+            events = parsedEvents.map(event => ({
+                id: event.id,
+                title: {
+                    ru: event.title || event.titleRu || 'Мероприятие',
+                    fr: event.titleFr || event.title || 'Événement'
+                },
+                date: event.date,
+                time: event.time,
+                location: {
+                    ru: event.location || event.locationRu || 'Место проведения',
+                    fr: event.locationFr || event.location || 'Lieu'
+                },
+                description: {
+                    ru: event.description || event.descriptionRu || 'Описание мероприятия',
+                    fr: event.descriptionFr || event.description || 'Description de l\'événement'
+                },
+                category: event.category || 'other',
+                image: event.image || '🎪',
+                tickets: event.tickets.map(ticket => ({
+                    id: ticket.id || ticket.type.toLowerCase().replace(/\s+/g, '_'),
+                    type: {
+                        ru: ticket.type || 'Билет',
+                        fr: ticket.typeFr || ticket.type || 'Billet'
+                    },
+                    price: ticket.price
+                }))
+            }));
+            console.log('Мероприятия загружены из localStorage:', events);
         } else {
-            console.warn('Не удалось загрузить events.json, используем данные по умолчанию');
-            events = getDefaultEvents();
+            // Если в localStorage нет данных, загружаем из JSON
+            const eventsResponse = await fetch('./data/events.json');
+            if (eventsResponse.ok) {
+                events = await eventsResponse.json();
+                console.log('Мероприятия загружены из JSON:', events);
+            } else {
+                console.warn('Не удалось загрузить events.json, используем данные по умолчанию');
+                events = getDefaultEvents();
+            }
         }
 
         // Загружаем настройки
