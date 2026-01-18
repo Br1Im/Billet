@@ -155,28 +155,6 @@ function getDefaultSettings() {
         }
     };
 }
-        title: {
-            ru: "Выставка современного искусства",
-            fr: "Exposition d'art contemporain"
-        },
-        date: "2025-03-01",
-        time: "10:00",
-        location: {
-            ru: "Музей современного искусства",
-            fr: "Musée d'art contemporain"
-        },
-        description: {
-            ru: "Уникальная выставка работ современных художников. Более 100 произведений живописи и скульптуры.",
-            fr: "Exposition unique d'œuvres d'artistes contemporains. Plus de 100 œuvres de peinture et de sculpture."
-        },
-        image: "🎨",
-        tickets: [
-            { type: { ru: "Взрослый", fr: "Adulte" }, price: 800 },
-            { type: { ru: "Льготный", fr: "Tarif réduit" }, price: 400 },
-            { type: { ru: "Детский", fr: "Enfant" }, price: 200 }
-        ]
-    }
-];
 
 // Переводы
 const translations = {
