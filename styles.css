@@ -230,14 +230,6 @@ body {
     font-size: 1.2rem;
 }
 
-.nav-icon-img {
-    width: 24px;
-    height: 24px;
-    object-fit: contain;
-    vertical-align: middle;
-    filter: brightness(0) invert(1);
-}
-
 .nav-text {
     font-weight: 600;
 }
