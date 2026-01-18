@@ -1,34 +1,107 @@
-// Данные для админ-панели
-let adminEvents = [
-    {
-        id: 1,
-        title: "Концерт классической музыки",
-        date: "2025-02-15",
-        time: "19:00",
-        location: "Концертный зал «Филармония»",
-        description: "Вечер классической музыки с произведениями Чайковского и Рахманинова в исполнении симфонического оркестра.",
-        image: "🎼",
-        tickets: [
-            { type: "Взрослый", price: 2500 },
-            { type: "Студенческий", price: 1500 },
-            { type: "Детский", price: 1000 }
-        ]
-    },
-    {
-        id: 2,
-        title: "Театральная постановка «Гамлет»",
-        date: "2025-02-20",
-        time: "18:30",
-        location: "Драматический театр",
-        description: "Классическая трагедия Шекспира в современной интерпретации.",
-        image: "🎭",
-        tickets: [
-            { type: "Партер", price: 3000 },
-            { type: "Амфитеатр", price: 2000 },
-            { type: "Балкон", price: 1500 }
-        ]
+// Глобальные переменные для админ-панели
+let adminEvents = [];
+let adminSettings = {};
+
+// Загрузка данных из JSON файлов
+async function loadAdminData() {
+    try {
+        // Загружаем мероприятия
+        const eventsResponse = await fetch('./data/events.json');
+        if (eventsResponse.ok) {
+            const events = await eventsResponse.json();
+            adminEvents = events.map(event => ({
+                id: event.id,
+                title: event.title.ru,
+                titleFr: event.title.fr,
+                date: event.date,
+                time: event.time,
+                location: event.location.ru,
+                locationFr: event.location.fr,
+                description: event.description.ru,
+                descriptionFr: event.description.fr,
+                category: event.category,
+                image: event.image,
+                tickets: event.tickets.map(ticket => ({
+                    id: ticket.id,
+                    type: ticket.type.ru,
+                    typeFr: ticket.type.fr,
+                    price: ticket.price
+                }))
+            }));
+        } else {
+            console.warn('Не удалось загрузить events.json');
+            adminEvents = getDefaultAdminEvents();
+        }
+
+        // Загружаем настройки
+        const settingsResponse = await fetch('./data/settings.json');
+        if (settingsResponse.ok) {
+            adminSettings = await settingsResponse.json();
+        } else {
+            console.warn('Не удалось загрузить settings.json');
+            adminSettings = getDefaultSettings();
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки данных:', error);
+        adminEvents = getDefaultAdminEvents();
+        adminSettings = getDefaultSettings();
     }
-];
+}
+
+// Данные по умолчанию для админ-панели
+function getDefaultAdminEvents() {
+    return [
+        {
+            id: 1,
+            title: "Концерт классической музыки",
+            titleFr: "Concert de musique classique",
+            date: "2025-02-15",
+            time: "19:00",
+            location: "Концертный зал «Филармония»",
+            locationFr: "Salle de concert «Philharmonie»",
+            description: "Вечер классической музыки с произведениями Чайковского и Рахманинова в исполнении симфонического оркестра.",
+            descriptionFr: "Soirée de musique classique avec des œuvres de Tchaïkovski et Rachmaninov interprétées par l'orchestre symphonique.",
+            category: "music",
+            image: "🎼",
+            tickets: [
+                { id: "adult", type: "Взрослый", typeFr: "Adulte", price: 2500 },
+                { id: "student", type: "Студенческий", typeFr: "Étudiant", price: 1500 },
+                { id: "child", type: "Детский", typeFr: "Enfant", price: 1000 }
+            ]
+        },
+        {
+            id: 2,
+            title: "Театральная постановка «Гамлет»",
+            titleFr: "Représentation théâtrale «Hamlet»",
+            date: "2025-02-20",
+            time: "18:30",
+            location: "Драматический театр",
+            locationFr: "Théâtre dramatique",
+            description: "Классическая трагедия Шекспира в современной интерпретации.",
+            descriptionFr: "La tragédie classique de Shakespeare dans une interprétation moderne.",
+            category: "theater",
+            image: "🎭",
+            tickets: [
+                { id: "parterre", type: "Партер", typeFr: "Parterre", price: 3000 },
+                { id: "amphitheater", type: "Амфитеатр", typeFr: "Amphithéâtre", price: 2000 },
+                { id: "balcony", type: "Балкон", typeFr: "Balcon", price: 1500 }
+            ]
+        }
+    ];
+}
+
+function getDefaultSettings() {
+    return {
+        siteName: "EventTickets",
+        logoUrl: "",
+        bankDetails: {
+            bankName: "Сбербанк России",
+            iban: "RU1234567890123456789012",
+            bic: "SBERRU2P",
+            recipient: "ООО «EventTickets»"
+        }
+    };
+}
 
 // Функции для работы с заказами из localStorage
 function getAllOrders() {
@@ -48,6 +121,58 @@ function updateOrderStatus(orderId, newStatus) {
         if (orderIndex !== -1) {
             orders[orderIndex].status = newStatus;
             orders[orderIndex].updatedAt = new Date().toLocaleString('ru-RU');
+            
+            localStorage.setItem('eventTicketsOrders', JSON.stringify(orders));
+            
+            // Сохраняем в JSON файл
+            saveOrdersToJSON(orders);
+            
+            // Обновляем отображение
+            loadAdminOrders();
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('Ошибка обновления заказа:', error);
+        return false;
+    }
+}
+
+function deleteOrder(orderId) {
+    try {
+        const orders = getAllOrders();
+        const filteredOrders = orders.filter(order => order.id !== orderId);
+        
+        localStorage.setItem('eventTicketsOrders', JSON.stringify(filteredOrders));
+        
+        // Сохраняем в JSON файл
+        saveOrdersToJSON(filteredOrders);
+        
+        // Обновляем отображение
+        loadAdminOrders();
+        return true;
+    } catch (error) {
+        console.error('Ошибка удаления заказа:', error);
+        return false;
+    }
+}
+
+// Сохранение заказов в JSON файл
+async function saveOrdersToJSON(orders) {
+    try {
+        // В реальном приложении здесь был бы API запрос
+        console.log('Заказы сохранены в JSON:', orders);
+        
+        // Можно добавить отправку на сервер:
+        // await fetch('./data/orders.json', {
+        //     method: 'POST',
+        //     headers: { 'Content-Type': 'application/json' },
+        //     body: JSON.stringify(orders, null, 2)
+        // });
+    } catch (error) {
+        console.error('Ошибка сохранения в JSON:', error);
+    }
+}
             
             localStorage.setItem('eventTicketsOrders', JSON.stringify(orders));
             
@@ -81,7 +206,10 @@ function deleteOrder(orderId) {
 let currentEditingEvent = null;
 
 // Инициализация админ-панели
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+    // Загружаем данные из JSON файлов
+    await loadAdminData();
+    
     setupAdminNavigation();
     loadAdminEvents();
     loadAdminOrders();

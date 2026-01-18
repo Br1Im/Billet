@@ -1,53 +1,124 @@
-// Данные мероприятий с поддержкой двух языков
-const events = [
-    {
-        id: 1,
-        title: {
-            ru: "Концерт классической музыки",
-            fr: "Concert de musique classique"
+// Глобальные переменные
+let events = [];
+let settings = {};
+
+// Загрузка данных из JSON файлов
+async function loadData() {
+    try {
+        // Загружаем мероприятия
+        const eventsResponse = await fetch('./data/events.json');
+        if (eventsResponse.ok) {
+            events = await eventsResponse.json();
+        } else {
+            console.warn('Не удалось загрузить events.json, используем данные по умолчанию');
+            events = getDefaultEvents();
+        }
+
+        // Загружаем настройки
+        const settingsResponse = await fetch('./data/settings.json');
+        if (settingsResponse.ok) {
+            settings = await settingsResponse.json();
+        } else {
+            console.warn('Не удалось загрузить settings.json, используем настройки по умолчанию');
+            settings = getDefaultSettings();
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки данных:', error);
+        events = getDefaultEvents();
+        settings = getDefaultSettings();
+    }
+}
+
+// Данные по умолчанию (fallback)
+function getDefaultEvents() {
+    return [
+        {
+            id: 1,
+            title: {
+                ru: "Концерт классической музыки",
+                fr: "Concert de musique classique"
+            },
+            date: "2025-02-15",
+            time: "19:00",
+            location: {
+                ru: "Концертный зал «Филармония»",
+                fr: "Salle de concert «Philharmonie»"
+            },
+            description: {
+                ru: "Вечер классической музыки с произведениями Чайковского и Рахманинова в исполнении симфонического оркестра.",
+                fr: "Soirée de musique classique avec des œuvres de Tchaïkovski et Rachmaninov interprétées par l'orchestre symphonique."
+            },
+            category: "music",
+            image: "🎼",
+            tickets: [
+                { id: "adult", type: { ru: "Взрослый", fr: "Adulte" }, price: 2500 },
+                { id: "student", type: { ru: "Студенческий", fr: "Étudiant" }, price: 1500 },
+                { id: "child", type: { ru: "Детский", fr: "Enfant" }, price: 1000 }
+            ]
         },
-        date: "2025-02-15",
-        time: "19:00",
-        location: {
-            ru: "Концертный зал «Филармония»",
-            fr: "Salle de concert «Philharmonie»"
+        {
+            id: 2,
+            title: {
+                ru: "Театральная постановка «Гамлет»",
+                fr: "Représentation théâtrale «Hamlet»"
+            },
+            date: "2025-02-20",
+            time: "18:30",
+            location: {
+                ru: "Драматический театр",
+                fr: "Théâtre dramatique"
+            },
+            description: {
+                ru: "Классическая трагедия Шекспира в современной интерпретации. Режиссер - лауреат премии «Золотая маска».",
+                fr: "La tragédie classique de Shakespeare dans une interprétation moderne. Mise en scène par un lauréat du prix «Masque d'Or»."
+            },
+            category: "theater",
+            image: "🎭",
+            tickets: [
+                { id: "parterre", type: { ru: "Партер", fr: "Parterre" }, price: 3000 },
+                { id: "amphitheater", type: { ru: "Амфитеатр", fr: "Amphithéâtre" }, price: 2000 },
+                { id: "balcony", type: { ru: "Балкон", fr: "Balcon" }, price: 1500 }
+            ]
         },
-        description: {
-            ru: "Вечер классической музыки с произведениями Чайковского и Рахманинова в исполнении симфонического оркестра.",
-            fr: "Soirée de musique classique avec des œuvres de Tchaïkovski et Rachmaninov interprétées par l'orchestre symphonique."
-        },
-        image: "🎼",
-        tickets: [
-            { type: { ru: "Взрослый", fr: "Adulte" }, price: 2500 },
-            { type: { ru: "Студенческий", fr: "Étudiant" }, price: 1500 },
-            { type: { ru: "Детский", fr: "Enfant" }, price: 1000 }
-        ]
-    },
-    {
-        id: 2,
-        title: {
-            ru: "Театральная постановка «Гамлет»",
-            fr: "Représentation théâtrale «Hamlet»"
-        },
-        date: "2025-02-20",
-        time: "18:30",
-        location: {
-            ru: "Драматический театр",
-            fr: "Théâtre dramatique"
-        },
-        description: {
-            ru: "Классическая трагедия Шекспира в современной интерпретации. Режиссер - лауреат премии «Золотая маска».",
-            fr: "La tragédie classique de Shakespeare dans une interprétation moderne. Mise en scène par un lauréat du prix «Masque d'Or»."
-        },
-        image: "🎭",
-        tickets: [
-            { type: { ru: "Партер", fr: "Parterre" }, price: 3000 },
-            { type: { ru: "Амфитеатр", fr: "Amphithéâtre" }, price: 2000 },
-            { type: { ru: "Балкон", fr: "Balcon" }, price: 1500 }
-        ]
-    },
-    {
-        id: 3,
+        {
+            id: 3,
+            title: {
+                ru: "Выставка современного искусства",
+                fr: "Exposition d'art contemporain"
+            },
+            date: "2025-02-25",
+            time: "10:00",
+            location: {
+                ru: "Галерея современного искусства",
+                fr: "Galerie d'art contemporain"
+            },
+            description: {
+                ru: "Уникальная выставка работ современных художников. Более 100 произведений живописи, скульптуры и инсталляций.",
+                fr: "Exposition unique d'œuvres d'artistes contemporains. Plus de 100 œuvres de peinture, sculpture et installations."
+            },
+            category: "art",
+            image: "🎨",
+            tickets: [
+                { id: "full", type: { ru: "Полный билет", fr: "Billet complet" }, price: 800 },
+                { id: "student", type: { ru: "Студенческий", fr: "Étudiant" }, price: 400 },
+                { id: "group", type: { ru: "Групповой (от 5 чел.)", fr: "Groupe (à partir de 5 pers.)" }, price: 600 }
+            ]
+        }
+    ];
+}
+
+function getDefaultSettings() {
+    return {
+        siteName: "EventTickets",
+        logoUrl: "",
+        bankDetails: {
+            bankName: "Сбербанк России",
+            iban: "RU1234567890123456789012",
+            bic: "SBERRU2P",
+            recipient: "ООО «EventTickets»"
+        }
+    };
+}
         title: {
             ru: "Выставка современного искусства",
             fr: "Exposition d'art contemporain"
@@ -170,7 +241,10 @@ let currentEvent = null;
 let cart = {};
 
 // Инициализация приложения
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+    // Загружаем данные из JSON файлов
+    await loadData();
+    
     // Устанавливаем сохраненный язык
     setInitialLanguage();
     loadSiteSettings();
@@ -630,7 +704,7 @@ function generateOrderId() {
     return `ORD-${timestamp}-${random}`;
 }
 
-// Сохранение заказа в localStorage
+// Сохранение заказа в localStorage и JSON
 function saveOrder(order) {
     try {
         // Получаем существующие заказы
@@ -639,14 +713,35 @@ function saveOrder(order) {
         // Добавляем новый заказ
         existingOrders.push(order);
         
-        // Сохраняем обратно
+        // Сохраняем в localStorage
         localStorage.setItem('eventTicketsOrders', JSON.stringify(existingOrders));
+        
+        // Также сохраняем в JSON файл (для удобного просмотра)
+        saveOrdersToJSON(existingOrders);
         
         console.log('Заказ сохранен:', order);
         return true;
     } catch (error) {
         console.error('Ошибка сохранения заказа:', error);
         return false;
+    }
+}
+
+// Сохранение заказов в JSON файл
+async function saveOrdersToJSON(orders) {
+    try {
+        // В реальном приложении здесь был бы API запрос
+        // Пока просто логируем для разработки
+        console.log('Заказы для сохранения в JSON:', orders);
+        
+        // Можно добавить отправку на сервер:
+        // await fetch('./data/orders.json', {
+        //     method: 'POST',
+        //     headers: { 'Content-Type': 'application/json' },
+        //     body: JSON.stringify(orders)
+        // });
+    } catch (error) {
+        console.error('Ошибка сохранения в JSON:', error);
     }
 }
 

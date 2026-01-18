@@ -1,0 +1,48 @@
+{
+  "siteName": "EventTickets",
+  "logoUrl": "",
+  "bankDetails": {
+    "bankName": "Сбербанк России",
+    "iban": "RU1234567890123456789012",
+    "bic": "SBERRU2P",
+    "recipient": "ООО «EventTickets»",
+    "inn": "1234567890",
+    "kpp": "123456789"
+  },
+  "contactInfo": {
+    "email": "info@eventtickets.com",
+    "phone": "+7 (999) 123-45-67",
+    "address": {
+      "ru": "г. Москва, ул. Примерная, д. 1",
+      "fr": "Moscou, rue Exemple, 1"
+    }
+  },
+  "socialMedia": {
+    "telegram": "@eventtickets",
+    "instagram": "@eventtickets",
+    "facebook": "eventtickets",
+    "vk": "eventtickets"
+  },
+  "emailTemplates": {
+    "orderConfirmation": {
+      "subject": {
+        "ru": "Подтверждение заказа #{orderId}",
+        "fr": "Confirmation de commande #{orderId}"
+      },
+      "body": {
+        "ru": "Ваш заказ #{orderId} принят. Инструкции по оплате во вложении.",
+        "fr": "Votre commande #{orderId} est acceptée. Instructions de paiement en pièce jointe."
+      }
+    },
+    "paymentConfirmation": {
+      "subject": {
+        "ru": "Билеты готовы! Заказ #{orderId}",
+        "fr": "Billets prêts! Commande #{orderId}"
+      },
+      "body": {
+        "ru": "Оплата подтверждена. Ваши билеты во вложении.",
+        "fr": "Paiement confirmé. Vos billets en pièce jointe."
+      }
+    }
+  }
+}

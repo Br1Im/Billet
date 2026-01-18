@@ -1,0 +1,137 @@
+[
+  {
+    "id": 1,
+    "title": {
+      "ru": "Концерт классической музыки",
+      "fr": "Concert de musique classique"
+    },
+    "date": "2025-02-15",
+    "time": "19:00",
+    "location": {
+      "ru": "Концертный зал «Филармония»",
+      "fr": "Salle de concert «Philharmonie»"
+    },
+    "description": {
+      "ru": "Вечер классической музыки с произведениями Чайковского и Рахманинова в исполнении симфонического оркестра.",
+      "fr": "Soirée de musique classique avec des œuvres de Tchaïkovski et Rachmaninov interprétées par l'orchestre symphonique."
+    },
+    "category": "music",
+    "image": "🎼",
+    "tickets": [
+      {
+        "id": "adult",
+        "type": {
+          "ru": "Взрослый",
+          "fr": "Adulte"
+        },
+        "price": 2500
+      },
+      {
+        "id": "student",
+        "type": {
+          "ru": "Студенческий",
+          "fr": "Étudiant"
+        },
+        "price": 1500
+      },
+      {
+        "id": "child",
+        "type": {
+          "ru": "Детский",
+          "fr": "Enfant"
+        },
+        "price": 1000
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "title": {
+      "ru": "Театральная постановка «Гамлет»",
+      "fr": "Représentation théâtrale «Hamlet»"
+    },
+    "date": "2025-02-20",
+    "time": "18:30",
+    "location": {
+      "ru": "Драматический театр",
+      "fr": "Théâtre dramatique"
+    },
+    "description": {
+      "ru": "Классическая трагедия Шекспира в современной интерпретации. Режиссер - лауреат премии «Золотая маска».",
+      "fr": "La tragédie classique de Shakespeare dans une interprétation moderne. Mise en scène par un lauréat du prix «Masque d'Or»."
+    },
+    "category": "theater",
+    "image": "🎭",
+    "tickets": [
+      {
+        "id": "parterre",
+        "type": {
+          "ru": "Партер",
+          "fr": "Parterre"
+        },
+        "price": 3000
+      },
+      {
+        "id": "amphitheater",
+        "type": {
+          "ru": "Амфитеатр",
+          "fr": "Amphithéâtre"
+        },
+        "price": 2000
+      },
+      {
+        "id": "balcony",
+        "type": {
+          "ru": "Балкон",
+          "fr": "Balcon"
+        },
+        "price": 1500
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "title": {
+      "ru": "Выставка современного искусства",
+      "fr": "Exposition d'art contemporain"
+    },
+    "date": "2025-02-25",
+    "time": "10:00",
+    "location": {
+      "ru": "Галерея современного искусства",
+      "fr": "Galerie d'art contemporain"
+    },
+    "description": {
+      "ru": "Уникальная выставка работ современных художников. Более 100 произведений живописи, скульптуры и инсталляций.",
+      "fr": "Exposition unique d'œuvres d'artistes contemporains. Plus de 100 œuvres de peinture, sculpture et installations."
+    },
+    "category": "art",
+    "image": "🎨",
+    "tickets": [
+      {
+        "id": "full",
+        "type": {
+          "ru": "Полный билет",
+          "fr": "Billet complet"
+        },
+        "price": 800
+      },
+      {
+        "id": "student",
+        "type": {
+          "ru": "Студенческий",
+          "fr": "Étudiant"
+        },
+        "price": 400
+      },
+      {
+        "id": "group",
+        "type": {
+          "ru": "Групповой (от 5 чел.)",
+          "fr": "Groupe (à partir de 5 pers.)"
+        },
+        "price": 600
+      }
+    ]
+  }
+]
