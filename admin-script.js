@@ -173,19 +173,6 @@ async function saveOrdersToJSON(orders) {
         console.error('Ошибка сохранения в JSON:', error);
     }
 }
-            
-            localStorage.setItem('eventTicketsOrders', JSON.stringify(orders));
-            
-            // Обновляем отображение
-            loadAdminOrders();
-            return true;
-        }
-        return false;
-    } catch (error) {
-        console.error('Ошибка обновления заказа:', error);
-        return false;
-    }
-}
 
 function deleteOrder(orderId) {
     try {
@@ -561,25 +548,6 @@ function loadAdminGuests() {
         </table>
     `;
     
-    guestsList.innerHTML = guestsHtml;
-}
-        
-        guestsHtml += `
-            <tr>
-                <td>${order.customerName}</td>
-                <td>${order.customerEmail}</td>
-                <td>${order.customerPhone}</td>
-                <td>${ticketsInfo}</td>
-                <td>${order.qrCode}</td>
-                <td>${checkedInStatus}</td>
-                <td>
-                    <button class="btn-secondary" onclick="resendTicket(${order.id})">Переслать билет</button>
-                </td>
-            </tr>
-        `;
-    });
-    
-    guestsHtml += '</tbody></table>';
     guestsList.innerHTML = guestsHtml;
 }
 

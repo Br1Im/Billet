@@ -2,12 +2,8 @@
    MODERN EVENT TICKETS - ULTRA DESIGN
    ============================================ */
 
-@font-face {
-    font-family: 'Unbounded';
-    src: url('Unbounded-VariableFont_wght.ttf') format('truetype');
-    font-weight: 100 900;
-    font-style: normal;
-}
+/* Импорт Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
     --primary: #6366f1;
@@ -76,7 +72,7 @@ img {
 }
 
 body {
-    font-family: 'Unbounded', sans-serif;
+    font-family: 'Inter', sans-serif;
     line-height: 1.6;
     color: var(--dark);
     background: #0a0e27;
