@@ -2,29 +2,57 @@
 let adminEvents = [];
 let adminSettings = {};
 let isAuthenticated = false;
+let authToken = null;
 
-// Настройки аутентификации
-const ADMIN_PASSWORD = 'admin123'; // Можно изменить на любой пароль
+// API базовый URL для админки
+const ADMIN_API_BASE = window.location.origin + '/api';
+
+// Функция для создания заголовков с авторизацией
+function getAuthHeaders() {
+    const headers = {
+        'Content-Type': 'application/json'
+    };
+    
+    if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+    }
+    
+    return headers;
+}
 
 // Проверка аутентификации
 function checkAuthentication() {
-    const savedAuth = localStorage.getItem('adminAuthenticated');
+    console.log('=== checkAuthentication начата ===');
+    
+    const savedToken = localStorage.getItem('adminToken');
     const authTime = localStorage.getItem('adminAuthTime');
     
+    console.log('Сохраненный токен:', savedToken ? 'Есть' : 'Нет');
+    console.log('Время авторизации:', authTime);
+    
     // Проверяем, прошло ли более 24 часов с момента входа
-    if (savedAuth === 'true' && authTime) {
+    if (savedToken && authTime) {
         const now = new Date().getTime();
         const authTimestamp = parseInt(authTime);
         const hoursPassed = (now - authTimestamp) / (1000 * 60 * 60);
         
+        console.log('Часов прошло:', hoursPassed);
+        
         if (hoursPassed < 24) {
+            authToken = savedToken;
             isAuthenticated = true;
+            console.log('Токен действителен, показываем админ-панель');
             showAdminPanel();
+            console.log('Вызов initializeAdminPanel из checkAuthentication...');
+            initializeAdminPanel();
             return;
+        } else {
+            console.log('Токен истек');
         }
     }
     
     // Если не аутентифицирован, показываем форму входа
+    console.log('Показываем форму входа');
     showLoginForm();
 }
 
@@ -42,28 +70,60 @@ function showAdminPanel() {
 }
 
 // Обработка входа
-function handleLogin(event) {
+async function handleLogin(event) {
     event.preventDefault();
     
+    console.log('=== handleLogin начата ===');
+    
+    const username = document.getElementById('adminUsername').value;
     const password = document.getElementById('adminPassword').value;
     
-    if (password === ADMIN_PASSWORD) {
-        isAuthenticated = true;
-        
-        // Сохраняем аутентификацию на 24 часа
-        localStorage.setItem('adminAuthenticated', 'true');
-        localStorage.setItem('adminAuthTime', new Date().getTime().toString());
-        
-        showAdminPanel();
-        
-        // Инициализируем админ-панель
-        initializeAdminPanel();
-        
-        showNotification('Добро пожаловать в админ-панель!', 'success');
-    } else {
-        showNotification('Неверный пароль!', 'error');
-        document.getElementById('adminPassword').value = '';
-        document.getElementById('adminPassword').focus();
+    console.log('Попытка входа:', username);
+    
+    if (!username || !password) {
+        showNotification('Введите логин и пароль!', 'error');
+        return;
+    }
+
+    try {
+        console.log('Отправка запроса на:', `${ADMIN_API_BASE}/auth/login`);
+        const response = await fetch(`${ADMIN_API_BASE}/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+        });
+
+        console.log('Ответ сервера:', response.status, response.ok);
+
+        if (response.ok) {
+            const result = await response.json();
+            console.log('Результат входа:', result);
+            
+            // Сохраняем токен и время входа
+            authToken = result.token;
+            localStorage.setItem('adminToken', authToken);
+            localStorage.setItem('adminAuthTime', new Date().getTime().toString());
+            
+            isAuthenticated = true;
+            showAdminPanel();
+            
+            // Инициализируем админ-панель
+            console.log('Вызов initializeAdminPanel...');
+            await initializeAdminPanel();
+            
+            showNotification('Добро пожаловать в админ-панель!', 'success');
+        } else {
+            const error = await response.json();
+            console.error('Ошибка входа:', error);
+            showNotification(error.error || 'Ошибка входа', 'error');
+            document.getElementById('adminPassword').value = '';
+            document.getElementById('adminPassword').focus();
+        }
+    } catch (error) {
+        console.error('Ошибка входа:', error);
+        showNotification('Ошибка соединения с сервером', 'error');
     }
 }
 
@@ -71,7 +131,8 @@ function handleLogin(event) {
 function logout() {
     if (confirm('Вы уверены, что хотите выйти?')) {
         isAuthenticated = false;
-        localStorage.removeItem('adminAuthenticated');
+        authToken = null;
+        localStorage.removeItem('adminToken');
         localStorage.removeItem('adminAuthTime');
         showLoginForm();
         showNotification('Вы вышли из админ-панели', 'info');
@@ -80,31 +141,88 @@ function logout() {
 
 // Инициализация админ-панели после входа
 async function initializeAdminPanel() {
-    // Загружаем данные из JSON файлов
+    console.log('=== initializeAdminPanel начата ===');
+    console.log('ADMIN_API_BASE:', ADMIN_API_BASE);
+    console.log('authToken:', authToken);
+    
+    // Загружаем данные с сервера
     await loadAdminData();
     
-    // Загружаем мероприятия из localStorage (приоритет над JSON)
-    loadEventsFromStorage();
+    console.log('После loadAdminData, adminEvents:', adminEvents);
     
     setupAdminNavigation();
     loadAdminEvents();
-    loadAdminOrders();
+    await loadAdminOrders();
     setupEventModal();
     loadEventFilters();
-    loadSettings();
-    updateDashboardStats();
+    await loadSettings();
+    await updateDashboardStats();
     initCursorFollower();
     
     // Обновляем статистику каждые 30 секунд
     setInterval(updateDashboardStats, 30000);
+    
+    console.log('=== initializeAdminPanel завершена ===');
 }
 
-// Загрузка данных (теперь без JSON файлов)
+// Загрузка данных с сервера
 async function loadAdminData() {
-    // Используем встроенные данные по умолчанию
-    adminEvents = getDefaultAdminEvents();
-    adminSettings = getDefaultSettings();
-    console.log('Используются встроенные данные админки');
+    console.log('loadAdminData начата...');
+    try {
+        // Загружаем мероприятия с сервера
+        console.log('Запрос мероприятий:', `${ADMIN_API_BASE}/events`);
+        const eventsResponse = await fetch(`${ADMIN_API_BASE}/events`, {
+            headers: getAuthHeaders()
+        });
+        console.log('Ответ сервера на запрос мероприятий:', eventsResponse.status, eventsResponse.ok);
+        
+        if (eventsResponse.ok) {
+            const serverEvents = await eventsResponse.json();
+            console.log('Мероприятия получены с сервера:', serverEvents);
+            
+            // Конвертируем в формат админки
+            adminEvents = serverEvents.map(event => ({
+                id: event.id,
+                title: event.title.ru,
+                titleFr: event.title.fr,
+                date: event.date,
+                time: event.time,
+                location: event.location.ru,
+                locationFr: event.location.fr,
+                description: event.description.ru,
+                descriptionFr: event.description.fr,
+                category: event.category,
+                image: event.image,
+                tickets: event.tickets.map(ticket => ({
+                    id: ticket.id,
+                    type: ticket.type.ru,
+                    typeFr: ticket.type.fr,
+                    price: ticket.price
+                }))
+            }));
+            console.log('Мероприятия конвертированы для админки:', adminEvents);
+        } else {
+            console.warn('Ошибка загрузки мероприятий с сервера, используем данные по умолчанию');
+            adminEvents = getDefaultAdminEvents();
+        }
+
+        // Загружаем настройки с сервера
+        const settingsResponse = await fetch(`${ADMIN_API_BASE}/settings/admin`, {
+            headers: getAuthHeaders()
+        });
+        if (settingsResponse.ok) {
+            adminSettings = await settingsResponse.json();
+            console.log('Настройки загружены с сервера:', adminSettings);
+        } else {
+            console.warn('Ошибка загрузки настроек с сервера, используем настройки по умолчанию');
+            adminSettings = getDefaultSettings();
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки данных с сервера:', error);
+        // Fallback на локальные данные
+        adminEvents = getDefaultAdminEvents();
+        adminSettings = getDefaultSettings();
+    }
 }
 
 // Данные по умолчанию для админ-панели
@@ -163,7 +281,7 @@ function getDefaultSettings() {
 }
 
 // Функции для работы с мероприятиями
-function saveEventsToStorage() {
+async function saveEventsToStorage() {
     try {
         // Конвертируем мероприятия в формат для клиентской части
         const clientEvents = adminEvents.map(event => ({
@@ -194,6 +312,7 @@ function saveEventsToStorage() {
             }))
         }));
         
+        // Сохраняем в localStorage как резерв
         localStorage.setItem('eventTicketsEvents', JSON.stringify(clientEvents));
         console.log('Мероприятия сохранены в localStorage для клиентской части:', clientEvents);
     } catch (error) {
@@ -201,80 +320,83 @@ function saveEventsToStorage() {
     }
 }
 
-function loadEventsFromStorage() {
+async function loadEventsFromStorage() {
+    // Теперь загружаем с сервера, а не из localStorage
+    await loadAdminData();
+}
+// Получение всех заказов с сервера
+async function getAllOrders() {
     try {
-        const storedEvents = localStorage.getItem('eventTicketsEvents');
-        if (storedEvents) {
-            const events = JSON.parse(storedEvents);
-            // Конвертируем в формат админки
-            adminEvents = events.map(event => ({
-                id: event.id,
-                title: typeof event.title === 'object' ? event.title.ru : event.title,
-                titleFr: typeof event.title === 'object' ? event.title.fr : event.title,
-                date: event.date,
-                time: event.time,
-                location: typeof event.location === 'object' ? event.location.ru : event.location,
-                locationFr: typeof event.location === 'object' ? event.location.fr : event.location,
-                description: typeof event.description === 'object' ? event.description.ru : event.description,
-                descriptionFr: typeof event.description === 'object' ? event.description.fr : event.description,
-                category: event.category || 'other',
-                image: event.image || '🎪',
-                tickets: event.tickets.map(ticket => ({
-                    id: ticket.id || ticket.type.toLowerCase().replace(/\s+/g, '_'),
-                    type: typeof ticket.type === 'object' ? ticket.type.ru : ticket.type,
-                    typeFr: typeof ticket.type === 'object' ? ticket.type.fr : ticket.type,
-                    price: ticket.price
-                }))
-            }));
-            console.log('Мероприятия загружены из localStorage:', adminEvents);
+        const response = await fetch(`${ADMIN_API_BASE}/orders`, {
+            headers: getAuthHeaders()
+        });
+        
+        if (response.ok) {
+            const orders = await response.json();
+            console.log('Заказы загружены с сервера:', orders);
+            
+            // Также сохраняем в localStorage как резерв
+            localStorage.setItem('eventTicketsOrders', JSON.stringify(orders));
+            
+            return orders;
+        } else if (response.status === 401) {
+            // Токен недействителен, выходим
+            logout();
+            return [];
+        } else {
+            console.warn('Ошибка загрузки заказов с сервера, используем localStorage');
+            return JSON.parse(localStorage.getItem('eventTicketsOrders')) || [];
         }
     } catch (error) {
-        console.error('Ошибка загрузки мероприятий:', error);
-    }
-}
-function getAllOrders() {
-    try {
-        return JSON.parse(localStorage.getItem('eventTicketsOrders')) || [];
-    } catch (error) {
         console.error('Ошибка загрузки заказов:', error);
-        return [];
+        return JSON.parse(localStorage.getItem('eventTicketsOrders')) || [];
     }
 }
 
-function updateOrderStatus(orderId, newStatus) {
+async function updateOrderStatus(orderId, newStatus) {
     try {
-        const orders = getAllOrders();
-        const orderIndex = orders.findIndex(order => order.id === orderId);
-        
-        if (orderIndex !== -1) {
-            orders[orderIndex].status = newStatus;
-            orders[orderIndex].updatedAt = new Date().toLocaleString('ru-RU');
+        const response = await fetch(`${ADMIN_API_BASE}/orders/${orderId}/status`, {
+            method: 'PATCH',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ status: newStatus })
+        });
+
+        if (response.ok) {
+            console.log('Статус заказа обновлен на сервере');
             
-            localStorage.setItem('eventTicketsOrders', JSON.stringify(orders));
-            
-            // Сохраняем в JSON файл
-            saveOrdersToJSON(orders);
+            // Обновляем в localStorage как резерв
+            const orders = JSON.parse(localStorage.getItem('eventTicketsOrders')) || [];
+            const orderIndex = orders.findIndex(order => order.id === orderId);
+            if (orderIndex !== -1) {
+                orders[orderIndex].status = newStatus;
+                orders[orderIndex].updatedAt = new Date().toLocaleString('ru-RU');
+                localStorage.setItem('eventTicketsOrders', JSON.stringify(orders));
+            }
             
             // Обновляем отображение
             loadAdminOrders();
             return true;
+        } else if (response.status === 401) {
+            logout();
+            return false;
+        } else {
+            const error = await response.json();
+            console.error('Ошибка обновления статуса на сервере:', error);
+            return false;
         }
-        return false;
     } catch (error) {
         console.error('Ошибка обновления заказа:', error);
         return false;
     }
 }
 
-function deleteOrder(orderId) {
+async function deleteOrder(orderId) {
     try {
-        const orders = getAllOrders();
+        // В API нет endpoint для удаления заказов, используем localStorage
+        const orders = JSON.parse(localStorage.getItem('eventTicketsOrders')) || [];
         const filteredOrders = orders.filter(order => order.id !== orderId);
         
         localStorage.setItem('eventTicketsOrders', JSON.stringify(filteredOrders));
-        
-        // Сохраняем в JSON файл
-        saveOrdersToJSON(filteredOrders);
         
         // Обновляем отображение
         loadAdminOrders();
@@ -302,22 +424,6 @@ async function saveOrdersToJSON(orders) {
     }
 }
 
-function deleteOrder(orderId) {
-    try {
-        const orders = getAllOrders();
-        const filteredOrders = orders.filter(order => order.id !== orderId);
-        
-        localStorage.setItem('eventTicketsOrders', JSON.stringify(filteredOrders));
-        
-        // Обновляем отображение
-        loadAdminOrders();
-        return true;
-    } catch (error) {
-        console.error('Ошибка удаления заказа:', error);
-        return false;
-    }
-}
-
 let currentEditingEvent = null;
 
 // Инициализация админ-панели
@@ -331,6 +437,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Инициализация следящего курсора
 function initCursorFollower() {
+    // Проверяем, является ли устройство мобильным
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                     window.innerWidth <= 768 || 
+                     'ontouchstart' in window;
+    
+    // На мобильных устройствах не создаем курсор
+    if (isMobile) {
+        return;
+    }
+    
     // Создаем элемент курсора
     const follower = document.createElement('div');
     follower.className = 'cursor-follower';
@@ -384,12 +500,37 @@ function initCursorFollower() {
 }
 
 // Загрузка настроек
-function loadSettings() {
+async function loadSettings() {
+    try {
+        // Загружаем настройки с сервера
+        const response = await fetch(`${ADMIN_API_BASE}/settings/admin`, {
+            headers: getAuthHeaders()
+        });
+        if (response.ok) {
+            const settings = await response.json();
+            
+            if (settings.siteName) document.getElementById('siteName').value = settings.siteName;
+            if (settings.bankName) document.getElementById('bankName').value = settings.bankName;
+            if (settings.bankIban) document.getElementById('iban').value = settings.bankIban;
+            if (settings.bankBic) document.getElementById('bic').value = settings.bankBic;
+            if (settings.bankRecipient) document.getElementById('accountHolder').value = settings.bankRecipient;
+            
+            // Применяем настройки к админке
+            applyAdminSettings(settings);
+        } else {
+            console.warn('Ошибка загрузки настроек с сервера, используем localStorage');
+            loadSettingsFromLocalStorage();
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки настроек:', error);
+        loadSettingsFromLocalStorage();
+    }
+}
+
+function loadSettingsFromLocalStorage() {
     const settings = JSON.parse(localStorage.getItem('eventTicketsSettings')) || {};
     
     if (settings.siteName) document.getElementById('siteName').value = settings.siteName;
-    if (settings.logoUrl) document.getElementById('logoUrl').value = settings.logoUrl;
-    
     if (settings.bankName) document.getElementById('bankName').value = settings.bankName;
     if (settings.iban) document.getElementById('iban').value = settings.iban;
     if (settings.bic) document.getElementById('bic').value = settings.bic;
@@ -453,9 +594,29 @@ function switchAdminSection(section) {
 // Загрузка событий в админке
 function loadAdminEvents() {
     const eventsList = document.getElementById('adminEventsList');
+    
+    console.log('loadAdminEvents вызвана, adminEvents:', adminEvents);
+    console.log('Количество мероприятий:', adminEvents.length);
+    
+    if (!eventsList) {
+        console.error('Элемент adminEventsList не найден!');
+        return;
+    }
+    
     eventsList.innerHTML = '';
     
+    if (adminEvents.length === 0) {
+        eventsList.innerHTML = `
+            <div class="empty-state">
+                <h3>Мероприятий пока нет</h3>
+                <p>Нажмите "Добавить мероприятие" чтобы создать первое мероприятие</p>
+            </div>
+        `;
+        return;
+    }
+    
     adminEvents.forEach(event => {
+        console.log('Создаем карточку для события:', event);
         const eventCard = createAdminEventCard(event);
         eventsList.appendChild(eventCard);
     });
@@ -467,7 +628,11 @@ function createAdminEventCard(event) {
     card.className = 'admin-event-card';
     
     const eventDate = new Date(event.date).toLocaleDateString('ru-RU');
-    const ticketTypes = event.tickets.map(t => `${t.type}: ${t.price}₽`).join(', ');
+    // Поддержка обоих форматов: старого (t.type - строка) и нового (t.type - объект)
+    const ticketTypes = event.tickets.map(t => {
+        const ticketType = typeof t.type === 'string' ? t.type : (t.type?.ru || t.type);
+        return `${ticketType}: ${t.price}₽`;
+    }).join(', ');
     
     card.innerHTML = `
         <div class="event-info-admin">
@@ -488,17 +653,17 @@ function createAdminEventCard(event) {
 }
 
 // Загрузка заказов
-function loadAdminOrders() {
+async function loadAdminOrders() {
     const ordersList = document.getElementById('adminOrdersList');
     if (!ordersList) return;
     
-    ordersList.innerHTML = '';
+    ordersList.innerHTML = '<div class="loading">Загрузка заказов...</div>';
     
     const statusFilter = document.getElementById('statusFilter')?.value || '';
     const eventFilter = document.getElementById('eventFilter')?.value || '';
     
-    // Получаем заказы из localStorage
-    let filteredOrders = getAllOrders();
+    // Получаем заказы с сервера
+    let filteredOrders = await getAllOrders();
     
     if (statusFilter) {
         filteredOrders = filteredOrders.filter(order => order.status.toUpperCase() === statusFilter.toUpperCase());
@@ -521,6 +686,7 @@ function loadAdminOrders() {
         return;
     }
     
+    ordersList.innerHTML = '';
     filteredOrders.forEach(order => {
         const orderCard = createAdminOrderCard(order);
         ordersList.appendChild(orderCard);
@@ -597,7 +763,7 @@ function createAdminOrderCard(order) {
 }
 
 // Загрузка гостей
-function loadAdminGuests() {
+async function loadAdminGuests() {
     const guestsList = document.getElementById('adminGuestsList');
     const eventFilter = document.getElementById('guestEventFilter')?.value;
     
@@ -608,8 +774,10 @@ function loadAdminGuests() {
         return;
     }
     
-    // Получаем заказы из localStorage
-    const allOrders = getAllOrders();
+    guestsList.innerHTML = '<div class="loading">Загрузка списка гостей...</div>';
+    
+    // Получаем заказы с сервера
+    const allOrders = await getAllOrders();
     const eventOrders = allOrders.filter(order => 
         order.eventId == eventFilter && order.status === 'PAID'
     );
@@ -622,22 +790,27 @@ function loadAdminGuests() {
     let guestsHtml = `
         <div class="guests-header">
             <h3>Список гостей (${eventOrders.length} заказов)</h3>
-            <button class="btn-secondary" onclick="exportGuestList()">Экспорт в Excel</button>
+            <div class="export-buttons">
+                <button class="btn-secondary" onclick="exportGuestList()">Экспорт в Excel</button>
+            </div>
         </div>
-        <table class="guests-table">
-            <thead>
-                <tr>
-                    <th>Заказ</th>
-                    <th>Имя</th>
-                    <th>Email</th>
-                    <th>Телефон</th>
-                    <th>Билеты</th>
-                    <th>Сумма</th>
-                    <th>Статус входа</th>
-                    <th>Действия</th>
-                </tr>
-            </thead>
-            <tbody>
+        
+        <!-- Обычная таблица для десктопа -->
+        <div class="guests-table-wrapper">
+            <table class="guests-table">
+                <thead>
+                    <tr>
+                        <th>Заказ</th>
+                        <th>Имя</th>
+                        <th>Email</th>
+                        <th>Телефон</th>
+                        <th>Билеты</th>
+                        <th>Сумма</th>
+                        <th>Статус входа</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
     `;
     
     eventOrders.forEach(order => {
@@ -663,8 +836,59 @@ function loadAdminGuests() {
     });
     
     guestsHtml += `
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Мобильная версия -->
+        <div class="guests-mobile-view">
+    `;
+    
+    eventOrders.forEach(order => {
+        const ticketsInfo = order.tickets.map(t => `${t.type} x${t.quantity}`).join(', ');
+        const checkedInStatus = order.checkedIn ? 
+            `<span class="checked-in">✓ Вошел</span>` : 
+            `<button class="check-in-btn" onclick="checkInGuest('${order.id}')">Отметить вход</button>`;
+        
+        guestsHtml += `
+            <div class="guest-card ${order.checkedIn ? 'checked-in-row' : ''}">
+                <div class="guest-card-header">
+                    <div class="guest-name">${order.customer.name}</div>
+                    <div class="guest-actions">
+                        ${checkedInStatus}
+                    </div>
+                </div>
+                <div class="guest-details">
+                    <div class="guest-detail">
+                        <strong>Заказ</strong>
+                        #${order.id}
+                    </div>
+                    <div class="guest-detail">
+                        <strong>Email</strong>
+                        ${order.customer.email}
+                    </div>
+                    <div class="guest-detail">
+                        <strong>Телефон</strong>
+                        ${order.customer.phone}
+                    </div>
+                    <div class="guest-detail">
+                        <strong>Сумма</strong>
+                        ${order.totalAmount}₽
+                    </div>
+                    <div class="guest-detail" style="grid-column: 1 / -1;">
+                        <strong>Билеты</strong>
+                        ${ticketsInfo}
+                    </div>
+                </div>
+                <div class="guest-actions">
+                    <button class="btn-small btn-secondary" onclick="resendTicket('${order.id}')">Переслать билет</button>
+                </div>
+            </div>
+        `;
+    });
+    
+    guestsHtml += `
+        </div>
     `;
     
     guestsList.innerHTML = guestsHtml;
@@ -798,7 +1022,7 @@ function removeTicketType(button) {
 }
 
 // Обработка отправки формы события
-function handleEventSubmit(e) {
+async function handleEventSubmit(e) {
     e.preventDefault();
     
     const formData = new FormData(e.target);
@@ -810,47 +1034,69 @@ function handleEventSubmit(e) {
         const price = parseInt(form.querySelector('.ticket-type-price').value);
         if (name && price) {
             ticketTypes.push({ 
-                id: name.toLowerCase().replace(/\s+/g, '_'),
-                type: name, 
-                typeFr: name, // Пока одинаковые, можно будет добавить перевод
+                name_ru: name,
+                name_fr: name, // Пока одинаковые, можно будет добавить перевод
                 price: price 
             });
         }
     });
     
     const eventData = {
-        title: document.getElementById('eventTitle').value,
-        titleFr: document.getElementById('eventTitle').value, // Пока одинаковые
+        title_ru: document.getElementById('eventTitle').value,
+        title_fr: document.getElementById('eventTitle').value, // Пока одинаковые
         date: document.getElementById('eventDate').value,
         time: document.getElementById('eventTime').value,
-        location: document.getElementById('eventLocation').value,
-        locationFr: document.getElementById('eventLocation').value, // Пока одинаковые
-        description: document.getElementById('eventDescription').value,
-        descriptionFr: document.getElementById('eventDescription').value, // Пока одинаковые
+        location_ru: document.getElementById('eventLocation').value,
+        location_fr: document.getElementById('eventLocation').value, // Пока одинаковые
+        description_ru: document.getElementById('eventDescription').value,
+        description_fr: document.getElementById('eventDescription').value, // Пока одинаковые
         category: 'other', // По умолчанию
         image: document.getElementById('eventImage').value || '🎪',
         tickets: ticketTypes
     };
     
-    if (currentEditingEvent) {
-        // Редактирование существующего события
-        const eventIndex = adminEvents.findIndex(e => e.id === currentEditingEvent);
-        adminEvents[eventIndex] = { ...adminEvents[eventIndex], ...eventData };
-    } else {
-        // Добавление нового события
-        const newId = adminEvents.length > 0 ? Math.max(...adminEvents.map(e => e.id)) + 1 : 1;
-        adminEvents.push({ id: newId, ...eventData });
+    try {
+        let response;
+        if (currentEditingEvent) {
+            // Редактирование существующего события
+            response = await fetch(`${ADMIN_API_BASE}/events/${currentEditingEvent}`, {
+                method: 'PUT',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(eventData)
+            });
+        } else {
+            // Добавление нового события
+            response = await fetch(`${ADMIN_API_BASE}/events`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(eventData)
+            });
+        }
+
+        if (response.ok) {
+            const result = await response.json();
+            console.log('Мероприятие сохранено на сервере:', result);
+            
+            // Перезагружаем данные с сервера
+            await loadAdminData();
+            
+            // Сохраняем в localStorage для синхронизации с клиентской частью
+            await saveEventsToStorage();
+            
+            loadAdminEvents();
+            loadEventFilters();
+            closeEventModal();
+            
+            showNotification('Мероприятие успешно сохранено!', 'success');
+        } else {
+            const error = await response.json();
+            console.error('Ошибка сохранения на сервере:', error);
+            showNotification('Ошибка сохранения мероприятия: ' + error.error, 'error');
+        }
+    } catch (error) {
+        console.error('Ошибка отправки данных:', error);
+        showNotification('Ошибка соединения с сервером', 'error');
     }
-    
-    // Сохраняем в localStorage для синхронизации с клиентской частью
-    saveEventsToStorage();
-    
-    loadAdminEvents();
-    loadEventFilters();
-    closeEventModal();
-    
-    // Показываем уведомление об успехе
-    showNotification('Мероприятие успешно сохранено и синхронизировано!', 'success');
 }
 
 // Редактирование события
@@ -859,22 +1105,42 @@ function editEvent(eventId) {
 }
 
 // Удаление события
-function deleteEvent(eventId) {
+async function deleteEvent(eventId) {
     if (confirm('Вы уверены, что хотите удалить это мероприятие?')) {
-        adminEvents = adminEvents.filter(e => e.id !== eventId);
-        
-        // Сохраняем изменения в localStorage
-        saveEventsToStorage();
-        
-        loadAdminEvents();
-        loadEventFilters();
-        showNotification('Мероприятие удалено и синхронизировано', 'success');
+        try {
+            const response = await fetch(`${ADMIN_API_BASE}/events/${eventId}`, {
+                method: 'DELETE',
+                headers: getAuthHeaders()
+            });
+
+            if (response.ok) {
+                console.log('Мероприятие удалено на сервере');
+                
+                // Перезагружаем данные с сервера
+                await loadAdminData();
+                
+                // Сохраняем в localStorage для синхронизации
+                await saveEventsToStorage();
+                
+                loadAdminEvents();
+                loadEventFilters();
+                showNotification('Мероприятие удалено', 'success');
+            } else {
+                const error = await response.json();
+                console.error('Ошибка удаления на сервере:', error);
+                showNotification('Ошибка удаления мероприятия: ' + error.error, 'error');
+            }
+        } catch (error) {
+            console.error('Ошибка удаления мероприятия:', error);
+            showNotification('Ошибка соединения с сервером', 'error');
+        }
     }
 }
 
 // Подтверждение оплаты
-function confirmPayment(orderId) {
-    if (updateOrderStatus(orderId, 'PAID')) {
+async function confirmPayment(orderId) {
+    const success = await updateOrderStatus(orderId, 'PAID');
+    if (success) {
         showNotification('Оплата подтверждена! Билет отправлен клиенту.', 'success');
     } else {
         showNotification('Ошибка при подтверждении оплаты', 'error');
@@ -882,8 +1148,9 @@ function confirmPayment(orderId) {
 }
 
 // Повторная отправка билета
-function resendTicket(orderId) {
-    const order = getAllOrders().find(o => o.id === orderId);
+async function resendTicket(orderId) {
+    const orders = await getAllOrders();
+    const order = orders.find(o => o.id === orderId);
     if (order) {
         showNotification(`Билет повторно отправлен на email: ${order.customer.email}`, 'success');
     } else {
@@ -892,15 +1159,17 @@ function resendTicket(orderId) {
 }
 
 // Подтверждение удаления заказа
-function deleteOrderConfirm(orderId) {
-    const order = getAllOrders().find(o => o.id === orderId);
+async function deleteOrderConfirm(orderId) {
+    const orders = await getAllOrders();
+    const order = orders.find(o => o.id === orderId);
     if (!order) {
         showNotification('Заказ не найден', 'error');
         return;
     }
     
     if (confirm(`Вы уверены, что хотите удалить заказ #${orderId}?\nКлиент: ${order.customer.name}\nСумма: ${order.totalAmount}₽`)) {
-        if (deleteOrder(orderId)) {
+        const success = await deleteOrder(orderId);
+        if (success) {
             showNotification('Заказ успешно удален', 'success');
         } else {
             showNotification('Ошибка при удалении заказа', 'error');
@@ -909,14 +1178,14 @@ function deleteOrderConfirm(orderId) {
 }
 
 // Отметка входа гостя
-function checkInGuest(orderId) {
-    const orders = getAllOrders();
+async function checkInGuest(orderId) {
+    const orders = await getAllOrders();
     const orderIndex = orders.findIndex(o => o.id === orderId);
     if (orderIndex !== -1) {
         orders[orderIndex].checkedIn = true;
         orders[orderIndex].checkedInAt = new Date().toLocaleString('ru-RU');
         localStorage.setItem('eventTicketsOrders', JSON.stringify(orders));
-        loadAdminGuests();
+        await loadAdminGuests();
         showNotification('Гость отмечен как вошедший', 'success');
     }
 }
@@ -974,23 +1243,41 @@ function loadEventFilters() {
 }
 
 // Сохранение настроек
-function saveSettings() {
+async function saveSettings() {
     const settings = {
         siteName: document.getElementById('siteName').value,
-        logoUrl: document.getElementById('logoUrl').value,
         bankName: document.getElementById('bankName').value,
-        iban: document.getElementById('iban').value,
-        bic: document.getElementById('bic').value,
-        accountHolder: document.getElementById('accountHolder').value
+        bankIban: document.getElementById('iban').value,
+        bankBic: document.getElementById('bic').value,
+        bankRecipient: document.getElementById('accountHolder').value
     };
     
-    // В реальном приложении здесь была бы отправка на сервер
-    localStorage.setItem('eventTicketsSettings', JSON.stringify(settings));
-    
-    // Применяем настройки сразу
-    applyAdminSettings(settings);
-    
-    showNotification('Настройки сохранены', 'success');
+    try {
+        const response = await fetch(`${ADMIN_API_BASE}/settings`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(settings)
+        });
+
+        if (response.ok) {
+            console.log('Настройки сохранены на сервере');
+            
+            // Также сохраняем в localStorage как резерв
+            localStorage.setItem('eventTicketsSettings', JSON.stringify(settings));
+            
+            // Применяем настройки сразу
+            applyAdminSettings(settings);
+            
+            showNotification('Настройки сохранены', 'success');
+        } else {
+            const error = await response.json();
+            console.error('Ошибка сохранения настроек на сервере:', error);
+            showNotification('Ошибка сохранения настроек: ' + error.error, 'error');
+        }
+    } catch (error) {
+        console.error('Ошибка сохранения настроек:', error);
+        showNotification('Ошибка соединения с сервером', 'error');
+    }
 }
 
 // Показ уведомлений
@@ -1035,14 +1322,14 @@ style.textContent = `
 document.head.appendChild(style);
 
 // Экспорт списка гостей
-function exportGuestList() {
+async function exportGuestList() {
     const eventFilter = document.getElementById('guestEventFilter')?.value;
     if (!eventFilter) {
         showNotification('Выберите мероприятие для экспорта', 'error');
         return;
     }
     
-    const allOrders = getAllOrders();
+    const allOrders = await getAllOrders();
     const eventOrders = allOrders.filter(order => 
         order.eventId == eventFilter && order.status === 'PAID'
     );
@@ -1080,8 +1367,8 @@ function exportGuestList() {
 }
 
 // Функция для получения статистики заказов
-function getOrdersStatistics() {
-    const orders = getAllOrders();
+async function getOrdersStatistics() {
+    const orders = await getAllOrders();
     
     const stats = {
         total: orders.length,
@@ -1096,8 +1383,8 @@ function getOrdersStatistics() {
 }
 
 // Обновление статистики на дашборде
-function updateDashboardStats() {
-    const stats = getOrdersStatistics();
+async function updateDashboardStats() {
+    const stats = await getOrdersStatistics();
     
     // Обновляем элементы статистики, если они есть
     const totalOrdersEl = document.getElementById('totalOrders');

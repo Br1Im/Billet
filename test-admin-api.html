@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест Admin API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Тест Admin API</h1>
+    
+    <div class="test-section">
+        <h2>1. Авторизация</h2>
+        <button onclick="testLogin()">Войти (admin/admin123)</button>
+        <div id="loginResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Получение мероприятий</h2>
+        <button onclick="testGetEvents()">Получить мероприятия (без токена)</button>
+        <button onclick="testGetEventsWithAuth()">Получить мероприятия (с токеном)</button>
+        <div id="eventsResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Информация</h2>
+        <div id="info">
+            <p><strong>API Base:</strong> <span id="apiBase"></span></p>
+            <p><strong>Токен:</strong> <span id="tokenInfo">Нет</span></p>
+        </div>
+    </div>
+
+    <script>
+        const ADMIN_API_BASE = window.location.origin + '/api';
+        let authToken = null;
+        
+        document.getElementById('apiBase').textContent = ADMIN_API_BASE;
+        
+        function getAuthHeaders() {
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            
+            if (authToken) {
+                headers['Authorization'] = `Bearer ${authToken}`;
+            }
+            
+            return headers;
+        }
+        
+        async function testLogin() {
+            const resultDiv = document.getElementById('loginResult');
+            resultDiv.innerHTML = '<p>Отправка запроса...</p>';
+            
+            try {
+                const response = await fetch(`${ADMIN_API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        username: 'admin', 
+                        password: 'admin123' 
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    authToken = data.token;
+                    document.getElementById('tokenInfo').textContent = authToken.substring(0, 20) + '...';
+                    resultDiv.innerHTML = `
+                        <p class="success">✓ Успешная авторизация!</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <p class="error">✗ Ошибка авторизации</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">✗ Ошибка: ${error.message}</p>
+                `;
+            }
+        }
+        
+        async function testGetEvents() {
+            const resultDiv = document.getElementById('eventsResult');
+            resultDiv.innerHTML = '<p>Отправка запроса без токена...</p>';
+            
+            try {
+                const response = await fetch(`${ADMIN_API_BASE}/events`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✓ Получено ${data.length} мероприятий</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <p class="error">✗ Ошибка</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">✗ Ошибка: ${error.message}</p>
+                `;
+            }
+        }
+        
+        async function testGetEventsWithAuth() {
+            const resultDiv = document.getElementById('eventsResult');
+            
+            if (!authToken) {
+                resultDiv.innerHTML = '<p class="error">✗ Сначала войдите в систему!</p>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<p>Отправка запроса с токеном...</p>';
+            
+            try {
+                const response = await fetch(`${ADMIN_API_BASE}/events`, {
+                    headers: getAuthHeaders()
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✓ Получено ${data.length} мероприятий</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <p class="error">✗ Ошибка</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">✗ Ошибка: ${error.message}</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

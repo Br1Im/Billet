@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Админ-панель - EventTickets</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="admin-styles.css">
+    <link rel="stylesheet" href="styles.css?v=2">
+    <link rel="stylesheet" href="admin-styles.css?v=2">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -15,18 +15,51 @@
             <h2>🔐 Вход в админ-панель</h2>
             <form id="loginForm">
                 <div class="form-group">
+                    <label for="adminUsername">Логин:</label>
+                    <input type="text" id="adminUsername" class="form-control" placeholder="Введите логин" value="admin" required>
+                </div>
+                <div class="form-group">
                     <label for="adminPassword">Пароль:</label>
                     <input type="password" id="adminPassword" class="form-control" placeholder="Введите пароль" required>
                 </div>
                 <button type="submit" class="btn-primary">Войти</button>
                 <div class="login-hint">
-                    <small>Пароль по умолчанию: <code>admin123</code></small>
+                    <small>Логин: <code>admin</code>, Пароль: <code>admin123</code></small>
                 </div>
             </form>
         </div>
     </div>
 
     <div class="admin-layout" id="adminPanel" style="display: none;">
+        <!-- Мобильный хедер -->
+        <div class="mobile-header">
+            <div class="mobile-header-content">
+                <div class="admin-logo">
+                    <h2>EventTickets</h2>
+                </div>
+                <button class="btn-logout" onclick="logout()">
+                    <span>🚪</span> Выйти
+                </button>
+            </div>
+        </div>
+        
+        <!-- Мобильная навигация -->
+        <nav class="mobile-nav">
+            <a href="#events" class="nav-item active" data-section="events">
+                <span>🎪</span> Мероприятия
+            </a>
+            <a href="#orders" class="nav-item" data-section="orders">
+                <span>📋</span> Заказы
+            </a>
+            <a href="#guests" class="nav-item" data-section="guests">
+                <span>👥</span> Гости
+            </a>
+            <a href="#settings" class="nav-item" data-section="settings">
+                <span>⚙️</span> Настройки
+            </a>
+        </nav>
+        
+        <!-- Десктопный сайдбар -->
         <aside class="admin-sidebar">
             <div class="admin-logo">
                 <h2>EventTickets</h2>
@@ -56,20 +89,25 @@
                     <span>⚙️</span> Настройки
                 </a>
             </nav>
+            
+            <div class="sidebar-footer">
+                <button class="btn-logout" onclick="logout()">
+                    <span>🚪</span> Выйти
+                </button>
+            </div>
         </aside>
 
         <main class="admin-main">
             <header class="admin-header">
                 <h1 id="sectionTitle">Управление мероприятиями</h1>
-                <div class="admin-actions">
-                    <button class="btn-primary" id="addEventBtn">+ Добавить мероприятие</button>
-                    <button class="btn-secondary" onclick="logout()">🚪 Выйти</button>
-                </div>
             </header>
 
             <div class="admin-content">
                 <!-- События -->
                 <section id="events-section" class="admin-section active">
+                    <div class="section-actions">
+                        <button class="btn-primary" id="addEventBtn">+ Добавить мероприятие</button>
+                    </div>
                     <div class="events-list" id="adminEventsList">
                         <!-- События будут загружены динамически -->
                     </div>

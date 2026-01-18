@@ -33,6 +33,8 @@
 body {
     font-family: 'Inter', sans-serif;
     background: #0a0e27;
+    margin: 0;
+    padding: 0;
 }
 
 .admin-layout {
@@ -57,11 +59,11 @@ body {
 }
 
 .admin-sidebar {
-    width: 280px;
+    width: 220px;
     background: rgba(15, 23, 42, 0.95);
     backdrop-filter: blur(20px);
     color: white;
-    padding: 2rem 0;
+    padding: 1.5rem 0;
     position: fixed;
     height: 100vh;
     overflow-y: auto;
@@ -71,15 +73,15 @@ body {
 }
 
 .admin-logo {
-    padding: 0 2rem;
-    margin-bottom: 2rem;
+    padding: 0 1.5rem;
+    margin-bottom: 1.5rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding-bottom: 2rem;
+    padding-bottom: 1.5rem;
 }
 
 .admin-logo h2 {
-    font-size: 1.8rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
     font-weight: 800;
     background: linear-gradient(135deg, #fff, #a5b4fc);
     -webkit-background-clip: text;
@@ -89,36 +91,37 @@ body {
 
 .admin-logo p {
     color: rgba(160, 174, 192, 0.8);
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     font-weight: 500;
+    margin: 0;
 }
 
 /* Навигация между страницами */
 .page-nav {
-    padding: 0 1rem;
-    margin-bottom: 2rem;
+    padding: 0 0.75rem;
+    margin-bottom: 1.5rem;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.25rem;
 }
 
 .page-nav-link {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
     color: rgba(160, 174, 192, 0.9);
     text-decoration: none;
     transition: all 0.3s ease;
-    border-radius: 12px;
+    border-radius: 8px;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
 }
 
 .page-nav-link:hover {
     background: rgba(45, 55, 72, 0.6);
     color: white;
-    transform: translateX(5px);
+    transform: translateX(3px);
 }
 
 .page-nav-link.active {
@@ -128,29 +131,30 @@ body {
 }
 
 .page-nav-link span {
-    font-size: 1.2rem;
+    font-size: 1rem;
 }
 
 .admin-nav {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    padding: 0 1rem;
+    gap: 0.25rem;
+    padding: 0 0.75rem;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding-top: 2rem;
+    padding-top: 1.5rem;
 }
 
 .nav-item {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1rem 1.5rem;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
     color: rgba(160, 174, 192, 0.9);
     text-decoration: none;
     transition: all 0.3s ease;
-    border-radius: 12px;
+    border-radius: 8px;
     position: relative;
     overflow: hidden;
+    font-size: 0.85rem;
 }
 
 .nav-item::before {
@@ -171,7 +175,7 @@ body {
 .nav-item:hover {
     background: rgba(45, 55, 72, 0.6);
     color: white;
-    transform: translateX(5px);
+    transform: translateX(3px);
 }
 
 .nav-item.active {
@@ -181,14 +185,54 @@ body {
 }
 
 .nav-item span {
-    font-size: 1.3rem;
+    font-size: 1.1rem;
     filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
+}
+
+/* Кнопка выхода в сайдбаре */
+.sidebar-footer {
+    padding: 1rem 0.75rem;
+    margin-top: auto;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-logout {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.btn-logout:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.btn-logout span {
+    font-size: 1rem;
+}
+
+/* Мобильные хедер и навигация - скрыты на десктопе */
+.mobile-header,
+.mobile-nav {
+    display: none;
 }
 
 .admin-main {
     flex: 1;
-    margin-left: 280px;
-    padding: 2rem;
+    margin-left: 220px;
+    padding: 1.5rem;
     min-height: 100vh;
 }
 
@@ -196,11 +240,11 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 3rem;
+    margin-bottom: 2rem;
     background: rgba(15, 23, 42, 0.95);
     backdrop-filter: blur(20px);
-    padding: 2rem;
-    border-radius: 20px;
+    padding: 1.5rem;
+    border-radius: 16px;
     box-shadow: 0 20px 60px rgba(0,0,0,0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
     position: relative;
@@ -219,18 +263,19 @@ body {
 
 .admin-header h1 {
     color: white;
-    font-size: 2rem;
+    font-size: 1.6rem;
     font-weight: 800;
     background: linear-gradient(135deg, #fff, #a5b4fc);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    margin: 0;
 }
 
 .admin-content {
     background: rgba(15, 23, 42, 0.95);
     backdrop-filter: blur(20px);
-    border-radius: 20px;
+    border-radius: 16px;
     box-shadow: 0 20px 60px rgba(0,0,0,0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
     overflow: hidden;
@@ -238,12 +283,20 @@ body {
 
 .admin-section {
     display: none;
-    padding: 3rem;
+    padding: 2rem;
 }
 
 .admin-section.active {
     display: block;
     animation: fadeInUp 0.5s ease;
+}
+
+/* Действия в секциях */
+.section-actions {
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
 }
 
 @keyframes fadeInUp {
@@ -254,16 +307,16 @@ body {
 /* События в админке */
 .events-list {
     display: grid;
-    gap: 1.5rem;
+    gap: 1rem;
 }
 
 .admin-event-card {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 2rem;
+    padding: 1.5rem;
     border: 2px solid rgba(102, 126, 234, 0.2);
-    border-radius: 16px;
+    border-radius: 12px;
     transition: all 0.3s ease;
     background: rgba(102, 126, 234, 0.05);
     position: relative;
@@ -299,19 +352,19 @@ body {
 
 .event-info-admin h3 {
     color: white;
-    margin-bottom: 1rem;
-    font-size: 1.4rem;
+    margin-bottom: 0.75rem;
+    font-size: 1.2rem;
     font-weight: 700;
 }
 
 .event-meta-admin {
     color: rgba(255, 255, 255, 0.7);
-    font-size: 0.95rem;
-    line-height: 1.6;
+    font-size: 0.85rem;
+    line-height: 1.5;
 }
 
 .event-meta-admin > div {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -365,26 +418,26 @@ body {
 /* Заказы */
 .orders-filters {
     display: flex;
-    gap: 1.5rem;
-    margin-bottom: 3rem;
-    padding: 1.5rem;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1rem;
     background: rgba(102, 126, 234, 0.05);
-    border-radius: 16px;
+    border-radius: 12px;
     border: 1px solid rgba(102, 126, 234, 0.2);
 }
 
 .orders-list {
     display: grid;
-    gap: 1.5rem;
+    gap: 1rem;
 }
 
 .order-card {
-    padding: 2rem;
+    padding: 1.5rem;
     border: 2px solid rgba(102, 126, 234, 0.2);
-    border-radius: 16px;
+    border-radius: 12px;
     display: grid;
     grid-template-columns: 1fr auto auto;
-    gap: 2rem;
+    gap: 1.5rem;
     align-items: center;
     background: rgba(102, 126, 234, 0.05);
     transition: all 0.3s ease;
@@ -479,30 +532,30 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 3rem;
-    padding: 1.5rem;
+    margin-bottom: 2rem;
+    padding: 1rem;
     background: rgba(102, 126, 234, 0.05);
-    border-radius: 16px;
+    border-radius: 12px;
     border: 1px solid rgba(102, 126, 234, 0.2);
 }
 
 .export-buttons {
     display: flex;
-    gap: 1rem;
+    gap: 0.75rem;
 }
 
 .guests-table {
     width: 100%;
     border-collapse: collapse;
     background: rgba(15, 23, 42, 0.5);
-    border-radius: 16px;
+    border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
 .guests-table th,
 .guests-table td {
-    padding: 1.5rem;
+    padding: 1rem;
     text-align: left;
     border-bottom: 1px solid rgba(102, 126, 234, 0.2);
 }
@@ -511,7 +564,7 @@ body {
     background: rgba(102, 126, 234, 0.1);
     font-weight: 700;
     color: white;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -771,74 +824,471 @@ body {
     transform: rotate(90deg);
 }
 
-/* Адаптивность */
-@media (max-width: 768px) {
+/* ============================================
+   АДАПТИВНОСТЬ - ПОЛНАЯ ПЕРЕДЕЛКА
+   ============================================ */
+
+/* Планшеты */
+@media (max-width: 1024px) {
     .admin-sidebar {
-        width: 220px;
+        width: 200px;
     }
     
     .admin-main {
-        margin-left: 220px;
-        padding: 1.5rem;
+        margin-left: 200px;
+        padding: 1.25rem;
     }
     
-    .admin-header {
-        flex-direction: column;
-        gap: 1.5rem;
-        align-items: stretch;
-        text-align: center;
-    }
-    
-    .orders-filters,
-    .guests-filters {
-        flex-direction: column;
-        gap: 1rem;
-    }
-    
-    .order-card {
-        grid-template-columns: 1fr;
-        text-align: center;
-        gap: 1rem;
-    }
-    
-    .admin-event-card {
-        flex-direction: column;
-        gap: 1.5rem;
-        text-align: center;
+    .order-info {
+        grid-template-columns: 1fr 1fr;
     }
 }
 
-@media (max-width: 480px) {
+/* Мобильные устройства */
+@media (max-width: 768px) {
+    /* Скрываем десктопный сайдбар полностью */
     .admin-sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
+        display: none !important;
+        width: 0 !important;
+        visibility: hidden !important;
     }
     
+    /* Показываем мобильный хедер */
+    .mobile-header {
+        display: block !important;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        background: rgba(15, 23, 42, 0.98);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .mobile-header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        max-width: 100%;
+    }
+    
+    .mobile-header .admin-logo {
+        padding: 0;
+        margin: 0;
+        border: none;
+    }
+    
+    .mobile-header .admin-logo h2 {
+        font-size: 1.3rem;
+        margin: 0;
+    }
+    
+    .mobile-header .btn-logout {
+        width: auto;
+        padding: 0.6rem 1rem;
+        font-size: 0.85rem;
+        min-height: 44px;
+    }
+    
+    /* Показываем мобильную навигацию */
+    .mobile-nav {
+        display: flex !important;
+        position: sticky;
+        top: 60px;
+        z-index: 999;
+        background: rgba(15, 23, 42, 0.95);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        padding: 0.75rem 1rem;
+        gap: 0.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .mobile-nav::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .mobile-nav .nav-item {
+        white-space: nowrap;
+        padding: 0.6rem 1rem;
+        font-size: 0.85rem;
+        gap: 0.5rem;
+        min-height: 44px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        text-decoration: none;
+        color: rgba(160, 174, 192, 0.9);
+        transition: all 0.3s ease;
+        background: rgba(102, 126, 234, 0.05);
+        border: 1px solid rgba(102, 126, 234, 0.2);
+    }
+    
+    .mobile-nav .nav-item.active {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.3), rgba(118, 75, 162, 0.3));
+        color: white;
+        border-color: rgba(102, 126, 234, 0.4);
+    }
+    
+    .mobile-nav .nav-item span {
+        font-size: 1.1rem;
+    }
+    
+    /* Основной контент */
     .admin-main {
-        margin-left: 0;
+        margin-left: 0 !important;
+        padding: 1rem !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+        margin-top: 0 !important;
+    }
+    
+    .admin-layout {
+        flex-direction: column !important;
+    }
+    
+    /* Заголовок */
+    .admin-header {
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .admin-header h1 {
+        font-size: 1.4rem;
+    }
+    
+    /* Секции */
+    .admin-section {
+        padding: 1.5rem;
+    }
+    
+    /* Действия в секциях */
+    .section-actions {
+        margin-bottom: 1.5rem;
+    }
+    
+    .section-actions .btn-primary {
+        width: 100%;
+    }
+    
+    /* События */
+    .admin-event-card {
+        flex-direction: column;
+        padding: 1.25rem;
+        gap: 1rem;
+    }
+    
+    .event-actions {
+        width: 100%;
+        justify-content: stretch;
+    }
+    
+    .event-actions .btn-secondary,
+    .event-actions .btn-danger {
+        flex: 1;
+    }
+    
+    /* Заказы */
+    .orders-filters {
+        flex-direction: column;
         padding: 1rem;
     }
     
-    .admin-nav {
-        flex-direction: row;
-        overflow-x: auto;
-        padding: 0 1rem 1rem;
+    .orders-filters .form-control {
+        width: 100%;
     }
     
-    .nav-item {
-        white-space: nowrap;
-        min-width: 140px;
-        justify-content: center;
+    .order-info {
+        grid-template-columns: 1fr;
+    }
+    
+    .order-card {
+        padding: 1.25rem;
+    }
+    
+    .order-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    
+    .order-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    
+    /* Гости */
+    .guests-filters {
+        flex-direction: column;
+        padding: 1rem;
+        gap: 1rem;
+    }
+    
+    .guests-filters .form-control {
+        width: 100%;
+    }
+    
+    .export-buttons {
+        width: 100%;
+        flex-direction: column;
+    }
+    
+    .export-buttons .btn-secondary {
+        width: 100%;
+    }
+    
+    .guests-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
     
     .guests-table {
-        font-size: 0.8rem;
+        min-width: 600px;
+        font-size: 0.85rem;
     }
     
     .guests-table th,
     .guests-table td {
-        padding: 0.75rem 0.5rem;
+        padding: 0.75rem;
+    }
+    
+    /* Модальные окна */
+    .modal-content {
+        width: 95%;
+        padding: 1.5rem;
+        max-height: 85vh;
+    }
+    
+    .modal-header h3 {
+        font-size: 1.3rem;
+    }
+    
+    .form-row {
+        flex-direction: column;
+    }
+    
+    .form-row .btn-danger {
+        align-self: flex-end;
+        margin-top: 0.5rem;
+    }
+    
+    .modal-actions {
+        flex-direction: column;
+    }
+    
+    .modal-actions .btn-primary,
+    .modal-actions .btn-secondary {
+        width: 100%;
+    }
+    
+    /* Touch improvements */
+    .btn-primary,
+    .btn-secondary,
+    .btn-danger,
+    .check-in-btn {
+        min-height: 44px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    .form-control {
+        min-height: 44px;
+        font-size: 16px; /* Предотвращает зум на iOS */
+    }
+}
+
+/* Мобильная версия гостей (карточки вместо таблицы) */
+@media (max-width: 640px) {
+    .guests-table-wrapper {
+        display: none;
+    }
+    
+    .guests-mobile-view {
+        display: block;
+    }
+    
+    .guest-card {
+        background: rgba(30, 41, 59, 0.5);
+        border: 1px solid rgba(100, 116, 139, 0.2);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .guest-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid rgba(100, 116, 139, 0.2);
+    }
+    
+    .guest-name {
+        font-weight: 600;
+        color: #e2e8f0;
+        font-size: 1rem;
+    }
+    
+    .guest-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .guest-detail {
+        color: #cbd5e1;
+        font-size: 0.85rem;
+    }
+    
+    .guest-detail strong {
+        color: #94a3b8;
+        display: block;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.25rem;
+    }
+    
+    .guest-actions {
+        display: flex;
+        justify-content: flex-end;
+    }
+}
+
+/* Очень маленькие экраны */
+@media (max-width: 480px) {
+    /* Мобильный хедер */
+    .mobile-header-content {
+        padding: 0.75rem;
+    }
+    
+    .mobile-header .admin-logo h2 {
+        font-size: 1.1rem;
+    }
+    
+    .mobile-header .btn-logout {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.75rem;
+    }
+    
+    .mobile-header .btn-logout span {
+        font-size: 0.9rem;
+    }
+    
+    /* Мобильная навигация */
+    .mobile-nav {
+        padding: 0.5rem 0.75rem;
+        gap: 0.35rem;
+    }
+    
+    .mobile-nav .nav-item {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.75rem;
+        gap: 0.35rem;
+    }
+    
+    .mobile-nav .nav-item span {
+        font-size: 1rem;
+    }
+    
+    /* Контент */
+    .admin-main {
+        padding: 0.75rem;
+    }
+    
+    .admin-header {
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    
+    .admin-header h1 {
+        font-size: 1.2rem;
+    }
+    
+    .admin-section {
+        padding: 1rem;
+    }
+    
+    /* Кнопки */
+    .btn-primary,
+    .btn-secondary,
+    .btn-danger {
+        padding: 0.65rem 1rem;
+        font-size: 0.85rem;
+    }
+    
+    /* События */
+    .admin-event-card {
+        padding: 1rem;
+    }
+    
+    .event-info-admin h3 {
+        font-size: 1.1rem;
+    }
+    
+    .event-meta-admin {
+        font-size: 0.8rem;
+    }
+    
+    /* Заказы */
+    .order-card {
+        padding: 1rem;
+    }
+    
+    .customer-info,
+    .event-info,
+    .order-details {
+        padding: 0.75rem;
+    }
+    
+    /* Гости */
+    .guest-details {
+        grid-template-columns: 1fr;
+    }
+    
+    .guest-card {
+        padding: 0.75rem;
+    }
+    
+    /* Модальные окна */
+    .modal-content {
+        padding: 1rem;
+        border-radius: 16px;
+    }
+    
+    .modal-header h3 {
+        font-size: 1.1rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Скрываем десктопный сайдбар на мобильных */
+/* Скрываем курсор на мобильных */
+@media (max-width: 768px), (hover: none) {
+    .cursor-follower {
+        display: none !important;
+    }
+}
+
+/* Скрываем мобильную версию гостей на десктопе */
+@media (min-width: 769px) {
+    .guests-mobile-view {
+        display: none;
+    }
+}
+    .guests-mobile-view {
+        display: none;
     }
 }
 /* Стили для заказов */
@@ -1037,51 +1487,6 @@ body {
     color: #94a3b8;
     margin-bottom: 0.5rem;
 }
-
-/* Адаптивность для заказов */
-@media (max-width: 1024px) {
-    .order-info {
-        grid-template-columns: 1fr 1fr;
-    }
-}
-
-@media (max-width: 768px) {
-    .order-info {
-        grid-template-columns: 1fr;
-    }
-    
-    .order-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
-    
-    .order-actions {
-        justify-content: flex-start;
-        flex-wrap: wrap;
-    }
-    
-    .guests-table {
-        font-size: 0.85rem;
-    }
-    
-    .guests-table th,
-    .guests-table td {
-        padding: 0.5rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .order-card {
-        padding: 1rem;
-    }
-    
-    .guests-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
-    }
-}
 /* Модальное окно */
 .modal {
     display: none;
@@ -1249,29 +1654,6 @@ body {
 .add-ticket-btn:hover {
     background: linear-gradient(135deg, #059669, #047857);
     transform: translateY(-1px);
-}
-
-/* Адаптивность модального окна */
-@media (max-width: 768px) {
-    .modal-content {
-        width: 95%;
-        padding: 1.5rem;
-        margin: 1rem;
-    }
-    
-    .form-row {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
-    .form-row .btn-danger {
-        align-self: flex-end;
-        margin-top: 0.5rem;
-    }
-    
-    .modal-actions {
-        flex-direction: column;
-    }
 }
 /* Форма входа */
 .login-overlay {

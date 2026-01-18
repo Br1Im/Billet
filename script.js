@@ -2,31 +2,49 @@
 let events = [];
 let settings = {
     siteName: "EventTickets",
-    logoUrl: "",
-    bankDetails: {
-        bankName: "Сбербанк России",
-        iban: "RU1234567890123456789012",
-        bic: "SBERRU2P",
-        recipient: "ООО «EventTickets»"
-    }
+    contactEmail: "info@eventtickets.com",
+    contactPhone: "+7 (999) 123-45-67"
 };
 
-// Инициализация данных
-function initializeData() {
-    // Загружаем мероприятия из localStorage или используем данные по умолчанию
-    const storedEvents = localStorage.getItem('eventTicketsEvents');
-    if (storedEvents) {
-        try {
-            const parsedEvents = JSON.parse(storedEvents);
-            events = parsedEvents;
-            console.log('Мероприятия загружены из localStorage:', events);
-        } catch (error) {
-            console.error('Ошибка парсинга localStorage:', error);
+// API базовый URL
+const API_BASE = window.location.origin + '/api';
+
+// Загрузка данных с сервера
+async function loadData() {
+    try {
+        // Загружаем мероприятия с сервера
+        const eventsResponse = await fetch(`${API_BASE}/events`);
+        if (eventsResponse.ok) {
+            events = await eventsResponse.json();
+            console.log('Мероприятия загружены с сервера:', events);
+        } else {
+            console.warn('Ошибка загрузки мероприятий с сервера, используем данные по умолчанию');
             events = getDefaultEvents();
         }
-    } else {
-        events = getDefaultEvents();
-        console.log('Используются мероприятия по умолчанию:', events);
+
+        // Загружаем настройки с сервера
+        const settingsResponse = await fetch(`${API_BASE}/settings`);
+        if (settingsResponse.ok) {
+            const serverSettings = await settingsResponse.json();
+            settings = { ...settings, ...serverSettings };
+            console.log('Настройки загружены с сервера:', settings);
+        } else {
+            console.warn('Ошибка загрузки настроек с сервера, используем настройки по умолчанию');
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки данных с сервера:', error);
+        // Fallback на локальные данные
+        const storedEvents = localStorage.getItem('eventTicketsEvents');
+        if (storedEvents) {
+            try {
+                events = JSON.parse(storedEvents);
+                console.log('Мероприятия загружены из localStorage:', events);
+            } catch (e) {
+                events = getDefaultEvents();
+            }
+        } else {
+            events = getDefaultEvents();
+        }
     }
 }
 
@@ -220,9 +238,9 @@ let currentEvent = null;
 let cart = {};
 
 // Инициализация приложения
-document.addEventListener('DOMContentLoaded', function() {
-    // Инициализируем данные
-    initializeData();
+document.addEventListener('DOMContentLoaded', async function() {
+    // Загружаем данные с сервера
+    await loadData();
     
     // Устанавливаем сохраненный язык
     setInitialLanguage();
@@ -235,6 +253,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Инициализация следящего курсора
 function initCursorFollower() {
+    // Проверяем, является ли устройство мобильным
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                     window.innerWidth <= 768 || 
+                     'ontouchstart' in window;
+    
+    // На мобильных устройствах не создаем курсор
+    if (isMobile) {
+        return;
+    }
+    
     // Создаем элемент курсора
     const follower = document.createElement('div');
     follower.className = 'cursor-follower';
@@ -370,7 +398,12 @@ function createEventCard(event) {
         year: 'numeric'
     });
     
-    const minPrice = Math.min(...event.tickets.map(t => t.price));
+    // Безопасное вычисление минимальной цены
+    let minPrice = 0;
+    if (event.tickets && event.tickets.length > 0) {
+        const prices = event.tickets.map(t => t.price).filter(price => price && !isNaN(price));
+        minPrice = prices.length > 0 ? Math.min(...prices) : 0;
+    }
     const title = typeof event.title === 'object' ? event.title[currentLang] : event.title;
     const location = typeof event.location === 'object' ? event.location[currentLang] : event.location;
     const fromText = translations[currentLang].from;
@@ -683,27 +716,82 @@ function generateOrderId() {
     return `ORD-${timestamp}-${random}`;
 }
 
-// Сохранение заказа в localStorage и JSON
-function saveOrder(order) {
+// Сохранение заказа на сервер
+async function saveOrder(order) {
     try {
-        // Получаем существующие заказы
-        const existingOrders = JSON.parse(localStorage.getItem('eventTicketsOrders')) || [];
-        
-        // Добавляем новый заказ
-        existingOrders.push(order);
-        
-        // Сохраняем в localStorage
-        localStorage.setItem('eventTicketsOrders', JSON.stringify(existingOrders));
-        
-        // Также сохраняем в JSON файл (для удобного просмотра)
-        saveOrdersToJSON(existingOrders);
-        
-        console.log('Заказ сохранен:', order);
-        return true;
+        // Подготавливаем данные для сервера
+        const orderData = {
+            eventId: order.eventId,
+            customer: order.customer,
+            tickets: order.tickets.map(ticket => ({
+                typeId: getTicketTypeId(order.eventId, ticket.type),
+                type: ticket.type,
+                quantity: ticket.quantity,
+                price: ticket.price
+            })),
+            totalAmount: order.totalAmount,
+            paymentMethod: order.paymentMethod,
+            language: order.language
+        };
+
+        // Отправляем на сервер
+        const response = await fetch(`${API_BASE}/orders`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(orderData)
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            console.log('Заказ сохранен на сервере:', result);
+            
+            // Также сохраняем в localStorage как резерв
+            const existingOrders = JSON.parse(localStorage.getItem('eventTicketsOrders')) || [];
+            existingOrders.push({...order, id: result.orderId});
+            localStorage.setItem('eventTicketsOrders', JSON.stringify(existingOrders));
+            
+            return { success: true, orderId: result.orderId, order: result.order };
+        } else {
+            const error = await response.json();
+            console.error('Ошибка сохранения заказа на сервере:', error);
+            
+            // Fallback: сохраняем в localStorage
+            const existingOrders = JSON.parse(localStorage.getItem('eventTicketsOrders')) || [];
+            existingOrders.push(order);
+            localStorage.setItem('eventTicketsOrders', JSON.stringify(existingOrders));
+            
+            return { success: true, orderId: order.id, order: order, fallback: true };
+        }
     } catch (error) {
         console.error('Ошибка сохранения заказа:', error);
-        return false;
+        
+        // Fallback: сохраняем в localStorage
+        try {
+            const existingOrders = JSON.parse(localStorage.getItem('eventTicketsOrders')) || [];
+            existingOrders.push(order);
+            localStorage.setItem('eventTicketsOrders', JSON.stringify(existingOrders));
+            
+            return { success: true, orderId: order.id, order: order, fallback: true };
+        } catch (localError) {
+            console.error('Ошибка сохранения в localStorage:', localError);
+            return { success: false, error: 'Не удалось сохранить заказ' };
+        }
     }
+}
+
+// Получить ID типа билета по названию
+function getTicketTypeId(eventId, ticketTypeName) {
+    const event = events.find(e => e.id === eventId);
+    if (event) {
+        const ticket = event.tickets.find(t => {
+            const typeName = typeof t.type === 'object' ? t.type[currentLang] : t.type;
+            return typeName === ticketTypeName;
+        });
+        return ticket ? ticket.id : null;
+    }
+    return null;
 }
 
 // Сохранение заказов в JSON файл

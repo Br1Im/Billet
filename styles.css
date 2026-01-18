@@ -176,64 +176,6 @@ body {
     gap: 2rem;
 }
 
-.nav-menu {
-    display: flex;
-    gap: 0.5rem;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 0.3rem;
-    border-radius: 50px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.nav-link {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem 1.2rem;
-    border-radius: 50px;
-    text-decoration: none;
-    color: rgba(255, 255, 255, 0.7);
-    font-weight: 600;
-    font-size: 0.9rem;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.nav-link::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-    transition: left 0.5s ease;
-}
-
-.nav-link:hover::before {
-    left: 100%;
-}
-
-.nav-link:hover {
-    color: white;
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.nav-link.active {
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
-    color: white;
-    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
-}
-
-.nav-icon {
-    font-size: 1.2rem;
-}
-
-.nav-text {
-    font-weight: 600;
-}
-
 .logo {
     display: flex;
     align-items: center;
@@ -291,6 +233,8 @@ body {
     justify-content: center;
     gap: 0.5rem;
     min-width: 50px;
+    min-height: 44px; /* Минимальная высота для удобного касания */
+    touch-action: manipulation; /* Улучшает отзывчивость на мобильных */
 }
 
 .lang-btn .flag {
@@ -308,6 +252,18 @@ body {
     background: linear-gradient(135deg, #6366f1, #8b5cf6);
     color: white;
     box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+}
+
+/* Улучшенные стили для touch устройств */
+@media (hover: none) and (pointer: coarse) {
+    .lang-btn:active {
+        background: rgba(255, 255, 255, 0.15);
+        transform: scale(0.95);
+    }
+    
+    .lang-btn.active:active {
+        transform: scale(0.95);
+    }
 }
 
 /* ============================================
@@ -780,39 +736,79 @@ body {
         grid-template-columns: 1fr;
     }
     
+    .header {
+        padding: 0.75rem 0;
+    }
+    
     .header-content {
-        flex-direction: column;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
         gap: 1rem;
+    }
+    
+    .logo h1 {
+        font-size: 1.5rem;
+    }
+    
+    .logo {
+        gap: 0.75rem;
+    }
+    
+    .logo-icon {
+        width: 30px;
+        height: 30px;
     }
     
     .nav {
-        flex-direction: column;
-        width: 100%;
-        gap: 1rem;
+        flex-direction: row;
+        gap: 0.5rem;
     }
     
-    .nav-menu {
-        width: 100%;
-        justify-content: center;
+    .language-switcher {
+        gap: 0.25rem;
     }
     
-    .nav-link {
-        flex: 1;
-        justify-content: center;
-    }
-    
-    .nav-text {
-        display: none;
-    }
-    
-    .nav-icon {
-        font-size: 1.5rem;
+    .lang-btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+        min-width: 40px;
     }
 }
 
 @media (max-width: 480px) {
     .container {
         padding: 0 1rem;
+    }
+    
+    .header {
+        padding: 0.5rem 0;
+    }
+    
+    .logo h1 {
+        font-size: 1.25rem;
+    }
+    
+    .logo {
+        gap: 0.5rem;
+    }
+    
+    .logo-icon {
+        width: 25px;
+        height: 25px;
+    }
+    
+    .lang-btn {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.8rem;
+        min-width: 35px;
+        min-height: 40px;
+    }
+    
+    .language-switcher {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 25px;
+        padding: 0.2rem;
     }
     
     .hero-title {
@@ -1314,6 +1310,13 @@ body {
     height: 50px;
     background: rgba(99, 102, 241, 0.15);
     border-color: rgba(99, 102, 241, 0.3);
+}
+
+/* Скрываем курсор на мобильных устройствах */
+@media (max-width: 768px), (hover: none) {
+    .cursor-follower {
+        display: none !important;
+    }
 }
 
 /* ============================================
