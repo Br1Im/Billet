@@ -2,12 +2,50 @@
    ADMIN PANEL - DARK THEME
    ============================================ */
 
+@font-face {
+    font-family: 'Unbounded';
+    src: url('Unbounded-VariableFont_wght.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+}
+
+/* UI Polish */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0f172a;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.4);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(99, 102, 241, 0.7);
+}
+
+::selection {
+    background: rgba(236, 72, 153, 0.5);
+    color: white;
+}
+
 /* Админ-панель стили */
+body {
+    font-family: 'Unbounded', sans-serif;
+    background: #0a0e27;
+}
+
 .admin-layout {
     display: flex;
     min-height: 100vh;
     background: #0a0e27;
     position: relative;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 /* Анимированный фон */
@@ -805,5 +843,246 @@
     .guests-table th,
     .guests-table td {
         padding: 0.75rem 0.5rem;
+    }
+}
+/* Стили для заказов */
+.order-card {
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(100, 116, 139, 0.2);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.order-card:hover {
+    border-color: rgba(99, 102, 241, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(99, 102, 241, 0.1);
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(100, 116, 139, 0.2);
+}
+
+.order-header h4 {
+    margin: 0;
+    color: #e2e8f0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.order-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.customer-info,
+.event-info,
+.order-details {
+    background: rgba(30, 41, 59, 0.5);
+    padding: 1rem;
+    border-radius: 12px;
+    border: 1px solid rgba(100, 116, 139, 0.1);
+}
+
+.customer-info div,
+.event-info div,
+.order-details div {
+    margin-bottom: 0.5rem;
+    color: #cbd5e1;
+    font-size: 0.9rem;
+}
+
+.customer-info div:last-child,
+.event-info div:last-child,
+.order-details div:last-child {
+    margin-bottom: 0;
+}
+
+.order-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    transform: translateY(-1px);
+}
+
+.btn-small {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    border-radius: 6px;
+}
+
+/* Статусы заказов */
+.order-status {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: center;
+    min-width: 120px;
+}
+
+.status-pending {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.2));
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.status-paid {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.2));
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.status-expired {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.2));
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Таблица гостей */
+.guests-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.guests-header h3 {
+    margin: 0;
+    color: #e2e8f0;
+}
+
+.guests-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(15, 23, 42, 0.95);
+    border-radius: 12px;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+}
+
+.guests-table th {
+    background: linear-gradient(135deg, #1e293b, #334155);
+    color: #e2e8f0;
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(100, 116, 139, 0.2);
+}
+
+.guests-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(100, 116, 139, 0.1);
+    color: #cbd5e1;
+}
+
+.guests-table tr:hover {
+    background: rgba(30, 41, 59, 0.5);
+}
+
+.checked-in-row {
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.checked-in {
+    color: #10b981;
+    font-weight: 600;
+}
+
+.check-in-btn {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+}
+
+.check-in-btn:hover {
+    background: linear-gradient(135deg, #5b21b6, #7c3aed);
+    transform: translateY(-1px);
+}
+
+/* Пустое состояние */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #64748b;
+}
+
+.empty-state h3 {
+    color: #94a3b8;
+    margin-bottom: 0.5rem;
+}
+
+/* Адаптивность для заказов */
+@media (max-width: 1024px) {
+    .order-info {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .order-info {
+        grid-template-columns: 1fr;
+    }
+    
+    .order-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .order-actions {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+    
+    .guests-table {
+        font-size: 0.85rem;
+    }
+    
+    .guests-table th,
+    .guests-table td {
+        padding: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .order-card {
+        padding: 1rem;
+    }
+    
+    .guests-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
     }
 }

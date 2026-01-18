@@ -18,7 +18,7 @@
             
             <div class="page-nav">
                 <a href="index.html" class="page-nav-link">
-                    <span>🎫</span> События
+                    <img src="https://cdn-icons-png.flaticon.com/512/5973/5973317.png" class="nav-icon-img" alt="Events"> События
                 </a>
                 <a href="admin.html" class="page-nav-link active">
                     <span>🔧</span> Админ
@@ -94,6 +94,17 @@
                 <!-- Настройки -->
                 <section id="settings-section" class="admin-section">
                     <div class="settings-form">
+                        <h3>Настройки сайта</h3>
+                        <div class="form-group">
+                            <label for="siteName">Название сайта</label>
+                            <input type="text" id="siteName" class="form-control" placeholder="EventTickets">
+                        </div>
+                        <div class="form-group">
+                            <label for="logoUrl">URL логотипа (оставьте пустым для стандартного)</label>
+                            <input type="text" id="logoUrl" class="form-control" placeholder="https://example.com/logo.png">
+                            <small class="form-text text-muted">Поддерживаются ссылки на изображения (png, jpg, svg)</small>
+                        </div>
+
                         <h3>Банковские реквизиты</h3>
                         <div class="form-group">
                             <label for="bankName">Название банка</label>

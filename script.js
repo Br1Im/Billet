@@ -79,10 +79,7 @@ const translations = {
         heroTitle: "Актуальные мероприятия",
         heroSubtitle: "Выберите интересующее вас событие и забронируйте билеты",
         upcomingEvents: "Предстоящие события",
-        filterAll: "Все",
-        filterMusic: "Музыка",
-        filterTheater: "Театр",
-        filterArt: "Искусство",
+        filterAll: "Все мероприятия",
         whyChooseUs: "Почему выбирают нас",
         feature1Title: "Простое бронирование",
         feature1Text: "Забронируйте билеты за пару кликов",
@@ -127,10 +124,7 @@ const translations = {
         heroTitle: "Événements actuels",
         heroSubtitle: "Choisissez l'événement qui vous intéresse et réservez vos billets",
         upcomingEvents: "Événements à venir",
-        filterAll: "Tous",
-        filterMusic: "Musique",
-        filterTheater: "Théâtre",
-        filterArt: "Art",
+        filterAll: "Tous les événements",
         whyChooseUs: "Pourquoi nous choisir",
         feature1Title: "Réservation simple",
         feature1Text: "Réservez vos billets en quelques clics",
@@ -179,10 +173,110 @@ let cart = {};
 document.addEventListener('DOMContentLoaded', function() {
     // Устанавливаем сохраненный язык
     setInitialLanguage();
+    loadSiteSettings();
     loadEvents();
     setupLanguageSwitcher();
     setupEventHandlers();
+    initCursorFollower();
 });
+
+// Инициализация следящего курсора
+function initCursorFollower() {
+    // Создаем элемент курсора
+    const follower = document.createElement('div');
+    follower.className = 'cursor-follower';
+    document.body.appendChild(follower);
+    
+    let mouseX = 0;
+    let mouseY = 0;
+    let followerX = 0;
+    let followerY = 0;
+    
+    // Отслеживаем движение мыши
+    document.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+    });
+    
+    // Плавное движение через requestAnimationFrame
+    function animate() {
+        // Эффект задержки (lerp)
+        followerX += (mouseX - followerX) * 0.1;
+        followerY += (mouseY - followerY) * 0.1;
+        
+        follower.style.left = `${followerX}px`;
+        follower.style.top = `${followerY}px`;
+        
+        requestAnimationFrame(animate);
+    }
+    
+    animate();
+    
+    // Эффект при наведении на интерактивные элементы
+    const interactiveElements = document.querySelectorAll('a, button, input, select, textarea, .card, .logo');
+    
+    interactiveElements.forEach(el => {
+        el.addEventListener('mouseenter', () => follower.classList.add('active'));
+        el.addEventListener('mouseleave', () => follower.classList.remove('active'));
+    });
+    
+    // Отслеживаем новые элементы (через MutationObserver или просто делегирование, но пока так)
+    document.addEventListener('mouseover', (e) => {
+        if (e.target.matches('a, button, .btn-primary, .nav-item, .card')) {
+            follower.classList.add('active');
+        }
+    });
+    
+    document.addEventListener('mouseout', (e) => {
+        if (e.target.matches('a, button, .btn-primary, .nav-item, .card')) {
+            follower.classList.remove('active');
+        }
+    });
+}
+
+// Загрузка настроек сайта
+function loadSiteSettings() {
+    const settings = JSON.parse(localStorage.getItem('eventTicketsSettings')) || {};
+    
+    if (settings.siteName) {
+        // Обновляем заголовок на странице
+        const logoTitle = document.querySelector('.logo h1');
+        if (logoTitle) logoTitle.textContent = settings.siteName;
+        
+        // Обновляем title страницы
+        document.title = settings.siteName;
+        
+        // Обновляем переводы, чтобы при переключении языка имя сохранялось
+        translations.ru.title = settings.siteName;
+        translations.fr.title = settings.siteName;
+        
+        // Обновляем футер
+        const footerTitle = document.querySelector('.footer-section h4');
+        if (footerTitle && footerTitle.textContent === 'EventTickets') {
+            footerTitle.textContent = settings.siteName;
+        }
+    }
+    
+    if (settings.logoUrl) {
+        const logoContainer = document.querySelector('.logo');
+        if (logoContainer) {
+            const oldIcon = logoContainer.querySelector('.logo-icon');
+            if (oldIcon) oldIcon.style.display = 'none';
+            
+            // Проверяем, есть ли уже изображение логотипа
+            let logoImg = logoContainer.querySelector('.custom-logo');
+            if (!logoImg) {
+                logoImg = document.createElement('img');
+                logoImg.className = 'custom-logo';
+                logoImg.style.height = '40px';
+                logoImg.style.marginRight = '10px';
+                logoContainer.insertBefore(logoImg, logoContainer.querySelector('h1'));
+            }
+            logoImg.src = settings.logoUrl;
+            logoImg.alt = settings.siteName || 'Logo';
+        }
+    }
+}
 
 // Установка начального языка
 function setInitialLanguage() {
@@ -385,6 +479,7 @@ function createTicketSelector(ticket) {
 
 // Настройка обработчиков для страницы события
 function setupEventDetailHandlers() {
+    loadSiteSettings();
     setupLanguageSwitcher();
     
     // Обработчики для способов оплаты
@@ -452,7 +547,6 @@ function showOrderForm() {
 function handleOrderSubmit(e) {
     e.preventDefault();
     
-    const formData = new FormData(e.target);
     const customerData = {
         name: document.getElementById('customerName').value,
         email: document.getElementById('customerEmail').value,
@@ -460,12 +554,140 @@ function handleOrderSubmit(e) {
         paymentMethod: document.querySelector('.payment-option.selected').dataset.method
     };
     
-    // Симуляция отправки заказа
-    showSuccessMessage();
+    // Создаем заказ
+    const order = createOrder(customerData);
+    
+    // Сохраняем заказ
+    saveOrder(order);
+    
+    // Показываем сообщение об успехе
+    showSuccessMessage(order);
+}
+
+// Создание заказа
+function createOrder(customerData) {
+    const orderId = generateOrderId();
+    const orderDate = new Date().toISOString();
+    
+    // Подготавливаем билеты
+    const tickets = [];
+    let totalAmount = 0;
+    
+    Object.keys(cart).forEach(ticketType => {
+        const ticket = currentEvent.tickets.find(t => {
+            const type = typeof t.type === 'object' ? t.type[currentLang] : t.type;
+            return type === ticketType;
+        });
+        
+        if (ticket && cart[ticketType] > 0) {
+            const ticketInfo = {
+                type: ticketType,
+                typeRu: typeof ticket.type === 'object' ? ticket.type.ru : ticket.type,
+                typeFr: typeof ticket.type === 'object' ? ticket.type.fr : ticket.type,
+                price: ticket.price,
+                quantity: cart[ticketType],
+                subtotal: ticket.price * cart[ticketType]
+            };
+            tickets.push(ticketInfo);
+            totalAmount += ticketInfo.subtotal;
+        }
+    });
+    
+    const order = {
+        id: orderId,
+        eventId: currentEvent.id,
+        eventTitle: {
+            ru: typeof currentEvent.title === 'object' ? currentEvent.title.ru : currentEvent.title,
+            fr: typeof currentEvent.title === 'object' ? currentEvent.title.fr : currentEvent.title
+        },
+        eventDate: currentEvent.date,
+        eventTime: currentEvent.time,
+        eventLocation: {
+            ru: typeof currentEvent.location === 'object' ? currentEvent.location.ru : currentEvent.location,
+            fr: typeof currentEvent.location === 'object' ? currentEvent.location.fr : currentEvent.location
+        },
+        customer: {
+            name: customerData.name,
+            email: customerData.email,
+            phone: customerData.phone
+        },
+        tickets: tickets,
+        totalAmount: totalAmount,
+        paymentMethod: customerData.paymentMethod,
+        status: 'PENDING',
+        orderDate: orderDate,
+        createdAt: new Date().toLocaleString('ru-RU'),
+        language: currentLang
+    };
+    
+    return order;
+}
+
+// Генерация ID заказа
+function generateOrderId() {
+    const timestamp = Date.now();
+    const random = Math.floor(Math.random() * 1000);
+    return `ORD-${timestamp}-${random}`;
+}
+
+// Сохранение заказа в localStorage
+function saveOrder(order) {
+    try {
+        // Получаем существующие заказы
+        const existingOrders = JSON.parse(localStorage.getItem('eventTicketsOrders')) || [];
+        
+        // Добавляем новый заказ
+        existingOrders.push(order);
+        
+        // Сохраняем обратно
+        localStorage.setItem('eventTicketsOrders', JSON.stringify(existingOrders));
+        
+        console.log('Заказ сохранен:', order);
+        return true;
+    } catch (error) {
+        console.error('Ошибка сохранения заказа:', error);
+        return false;
+    }
+}
+
+// Получение всех заказов
+function getAllOrders() {
+    try {
+        return JSON.parse(localStorage.getItem('eventTicketsOrders')) || [];
+    } catch (error) {
+        console.error('Ошибка загрузки заказов:', error);
+        return [];
+    }
+}
+
+// Получение заказа по ID
+function getOrderById(orderId) {
+    const orders = getAllOrders();
+    return orders.find(order => order.id === orderId);
+}
+
+// Обновление статуса заказа
+function updateOrderStatus(orderId, newStatus) {
+    try {
+        const orders = getAllOrders();
+        const orderIndex = orders.findIndex(order => order.id === orderId);
+        
+        if (orderIndex !== -1) {
+            orders[orderIndex].status = newStatus;
+            orders[orderIndex].updatedAt = new Date().toLocaleString('ru-RU');
+            
+            localStorage.setItem('eventTicketsOrders', JSON.stringify(orders));
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('Ошибка обновления заказа:', error);
+        return false;
+    }
 }
 
 // Показать сообщение об успехе
-function showSuccessMessage() {
+function showSuccessMessage(order) {
     const modal = document.createElement('div');
     modal.className = 'modal active';
     modal.innerHTML = `
@@ -475,11 +697,22 @@ function showSuccessMessage() {
                 <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
             </div>
             <div class="success-message">
-                ${translations[currentLang].orderSuccessDesc}
+                <div class="order-summary">
+                    <h4>Заказ №${order.id}</h4>
+                    <p><strong>Мероприятие:</strong> ${order.eventTitle[currentLang]}</p>
+                    <p><strong>Дата:</strong> ${new Date(order.eventDate).toLocaleDateString(currentLang === 'ru' ? 'ru-RU' : 'fr-FR')} в ${order.eventTime}</p>
+                    <p><strong>Сумма:</strong> ${order.totalAmount} ₽</p>
+                    <p><strong>Статус:</strong> Ожидает оплаты</p>
+                </div>
+                <div class="success-text">
+                    ${translations[currentLang].orderSuccessDesc}
+                </div>
             </div>
-            <button class="btn-primary" onclick="location.reload()">
-                ${translations[currentLang].close}
-            </button>
+            <div class="modal-actions">
+                <button class="btn-primary" onclick="location.reload()">
+                    ${translations[currentLang].backToEvents}
+                </button>
+            </div>
         </div>
     `;
     
@@ -549,9 +782,6 @@ function updatePageTexts() {
     const filterTabs = document.querySelectorAll('.filter-tab');
     if (filterTabs.length > 0) {
         filterTabs[0].textContent = t.filterAll;
-        filterTabs[1].textContent = t.filterMusic;
-        filterTabs[2].textContent = t.filterTheater;
-        filterTabs[3].textContent = t.filterArt;
     }
     
     // Обновляем секцию "Почему выбирают нас"

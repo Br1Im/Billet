@@ -30,42 +30,53 @@ let adminEvents = [
     }
 ];
 
-let adminOrders = [
-    {
-        id: 1001,
-        eventId: 1,
-        eventTitle: "Концерт классической музыки",
-        customerName: "Иван Петров",
-        customerEmail: "ivan@example.com",
-        customerPhone: "+7 (999) 123-45-67",
-        tickets: [
-            { type: "Взрослый", quantity: 2, price: 2500 },
-            { type: "Детский", quantity: 1, price: 1000 }
-        ],
-        total: 6000,
-        paymentMethod: "transfer",
-        status: "pending",
-        orderDate: "2025-01-10T14:30:00",
-        qrCode: "QR001001"
-    },
-    {
-        id: 1002,
-        eventId: 1,
-        eventTitle: "Концерт классической музыки",
-        customerName: "Мария Сидорова",
-        customerEmail: "maria@example.com",
-        customerPhone: "+7 (999) 987-65-43",
-        tickets: [
-            { type: "Взрослый", quantity: 1, price: 2500 }
-        ],
-        total: 2500,
-        paymentMethod: "cash",
-        status: "paid",
-        orderDate: "2025-01-11T10:15:00",
-        qrCode: "QR001002",
-        checkedIn: false
+// Функции для работы с заказами из localStorage
+function getAllOrders() {
+    try {
+        return JSON.parse(localStorage.getItem('eventTicketsOrders')) || [];
+    } catch (error) {
+        console.error('Ошибка загрузки заказов:', error);
+        return [];
     }
-];
+}
+
+function updateOrderStatus(orderId, newStatus) {
+    try {
+        const orders = getAllOrders();
+        const orderIndex = orders.findIndex(order => order.id === orderId);
+        
+        if (orderIndex !== -1) {
+            orders[orderIndex].status = newStatus;
+            orders[orderIndex].updatedAt = new Date().toLocaleString('ru-RU');
+            
+            localStorage.setItem('eventTicketsOrders', JSON.stringify(orders));
+            
+            // Обновляем отображение
+            loadAdminOrders();
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('Ошибка обновления заказа:', error);
+        return false;
+    }
+}
+
+function deleteOrder(orderId) {
+    try {
+        const orders = getAllOrders();
+        const filteredOrders = orders.filter(order => order.id !== orderId);
+        
+        localStorage.setItem('eventTicketsOrders', JSON.stringify(filteredOrders));
+        
+        // Обновляем отображение
+        loadAdminOrders();
+        return true;
+    } catch (error) {
+        console.error('Ошибка удаления заказа:', error);
+        return false;
+    }
+}
 
 let currentEditingEvent = null;
 
@@ -76,7 +87,91 @@ document.addEventListener('DOMContentLoaded', function() {
     loadAdminOrders();
     setupEventModal();
     loadEventFilters();
+    loadSettings();
+    updateDashboardStats();
+    initCursorFollower();
+    
+    // Обновляем статистику каждые 30 секунд
+    setInterval(updateDashboardStats, 30000);
 });
+
+// Инициализация следящего курсора
+function initCursorFollower() {
+    // Создаем элемент курсора
+    const follower = document.createElement('div');
+    follower.className = 'cursor-follower';
+    document.body.appendChild(follower);
+    
+    let mouseX = 0;
+    let mouseY = 0;
+    let followerX = 0;
+    let followerY = 0;
+    
+    // Отслеживаем движение мыши
+    document.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+    });
+    
+    // Плавное движение через requestAnimationFrame
+    function animate() {
+        // Эффект задержки (lerp)
+        followerX += (mouseX - followerX) * 0.1;
+        followerY += (mouseY - followerY) * 0.1;
+        
+        follower.style.left = `${followerX}px`;
+        follower.style.top = `${followerY}px`;
+        
+        requestAnimationFrame(animate);
+    }
+    
+    animate();
+    
+    // Эффект при наведении на интерактивные элементы
+    const interactiveElements = document.querySelectorAll('a, button, input, select, textarea, .nav-item');
+    
+    interactiveElements.forEach(el => {
+        el.addEventListener('mouseenter', () => follower.classList.add('active'));
+        el.addEventListener('mouseleave', () => follower.classList.remove('active'));
+    });
+    
+    // Делегирование для динамических элементов
+    document.addEventListener('mouseover', (e) => {
+        if (e.target.matches('a, button, .btn-primary, .nav-item')) {
+            follower.classList.add('active');
+        }
+    });
+    
+    document.addEventListener('mouseout', (e) => {
+        if (e.target.matches('a, button, .btn-primary, .nav-item')) {
+            follower.classList.remove('active');
+        }
+    });
+}
+
+// Загрузка настроек
+function loadSettings() {
+    const settings = JSON.parse(localStorage.getItem('eventTicketsSettings')) || {};
+    
+    if (settings.siteName) document.getElementById('siteName').value = settings.siteName;
+    if (settings.logoUrl) document.getElementById('logoUrl').value = settings.logoUrl;
+    
+    if (settings.bankName) document.getElementById('bankName').value = settings.bankName;
+    if (settings.iban) document.getElementById('iban').value = settings.iban;
+    if (settings.bic) document.getElementById('bic').value = settings.bic;
+    if (settings.accountHolder) document.getElementById('accountHolder').value = settings.accountHolder;
+    
+    // Применяем настройки к админке
+    applyAdminSettings(settings);
+}
+
+// Применение настроек к админке
+function applyAdminSettings(settings) {
+    if (settings.siteName) {
+        document.querySelector('.admin-logo h2').textContent = settings.siteName;
+        document.title = `Админ-панель - ${settings.siteName}`;
+    }
+}
 
 // Настройка навигации
 function setupAdminNavigation() {
@@ -161,19 +256,35 @@ function createAdminEventCard(event) {
 // Загрузка заказов
 function loadAdminOrders() {
     const ordersList = document.getElementById('adminOrdersList');
+    if (!ordersList) return;
+    
     ordersList.innerHTML = '';
     
     const statusFilter = document.getElementById('statusFilter')?.value || '';
     const eventFilter = document.getElementById('eventFilter')?.value || '';
     
-    let filteredOrders = adminOrders;
+    // Получаем заказы из localStorage
+    let filteredOrders = getAllOrders();
     
     if (statusFilter) {
-        filteredOrders = filteredOrders.filter(order => order.status === statusFilter);
+        filteredOrders = filteredOrders.filter(order => order.status.toUpperCase() === statusFilter.toUpperCase());
     }
     
     if (eventFilter) {
         filteredOrders = filteredOrders.filter(order => order.eventId == eventFilter);
+    }
+    
+    // Сортируем по дате создания (новые сначала)
+    filteredOrders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
+    
+    if (filteredOrders.length === 0) {
+        ordersList.innerHTML = `
+            <div class="empty-state">
+                <h3>Заказов не найдено</h3>
+                <p>Пока нет заказов с выбранными фильтрами</p>
+            </div>
+        `;
+        return;
     }
     
     filteredOrders.forEach(order => {
@@ -187,39 +298,64 @@ function createAdminOrderCard(order) {
     const card = document.createElement('div');
     card.className = 'order-card';
     
-    const orderDate = new Date(order.orderDate).toLocaleDateString('ru-RU');
-    const ticketsInfo = order.tickets.map(t => `${t.type} x${t.quantity}`).join(', ');
+    const orderDate = new Date(order.orderDate).toLocaleDateString('ru-RU', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    
+    const ticketsInfo = order.tickets.map(t => `${t.type} x${t.quantity} (${t.price}₽)`).join(', ');
     
     const statusClasses = {
-        pending: 'status-pending',
-        paid: 'status-paid',
-        expired: 'status-expired'
+        PENDING: 'status-pending',
+        PAID: 'status-paid',
+        EXPIRED: 'status-expired'
     };
     
     const statusTexts = {
-        pending: 'Ожидает оплаты',
-        paid: 'Оплачен',
-        expired: 'Просрочен'
+        PENDING: 'Ожидает оплаты',
+        PAID: 'Оплачен',
+        EXPIRED: 'Просрочен'
+    };
+    
+    const paymentMethodTexts = {
+        transfer: 'Банковский перевод',
+        cash: 'Наличные'
     };
     
     card.innerHTML = `
-        <div class="order-info">
+        <div class="order-header">
             <h4>Заказ #${order.id}</h4>
-            <div class="order-details">
-                <div><strong>${order.customerName}</strong> (${order.customerEmail})</div>
-                <div>${order.eventTitle}</div>
-                <div>${ticketsInfo}</div>
-                <div>Сумма: ${order.total}₽ | ${orderDate}</div>
+            <div class="order-status ${statusClasses[order.status]}">
+                ${statusTexts[order.status]}
             </div>
         </div>
-        <div class="order-status ${statusClasses[order.status]}">
-            ${statusTexts[order.status]}
+        <div class="order-info">
+            <div class="customer-info">
+                <div><strong>Клиент:</strong> ${order.customer.name}</div>
+                <div><strong>Email:</strong> ${order.customer.email}</div>
+                <div><strong>Телефон:</strong> ${order.customer.phone}</div>
+            </div>
+            <div class="event-info">
+                <div><strong>Мероприятие:</strong> ${order.eventTitle.ru}</div>
+                <div><strong>Дата события:</strong> ${new Date(order.eventDate).toLocaleDateString('ru-RU')} в ${order.eventTime}</div>
+                <div><strong>Место:</strong> ${order.eventLocation.ru}</div>
+            </div>
+            <div class="order-details">
+                <div><strong>Билеты:</strong> ${ticketsInfo}</div>
+                <div><strong>Сумма:</strong> ${order.totalAmount}₽</div>
+                <div><strong>Способ оплаты:</strong> ${paymentMethodTexts[order.paymentMethod]}</div>
+                <div><strong>Дата заказа:</strong> ${orderDate}</div>
+            </div>
         </div>
         <div class="order-actions">
-            ${order.status === 'pending' ? 
-                `<button class="btn-primary" onclick="confirmPayment(${order.id})">Подтвердить оплату</button>` : 
-                `<button class="btn-secondary" onclick="resendTicket(${order.id})">Переслать билет</button>`
+            ${order.status === 'PENDING' ? 
+                `<button class="btn-primary" onclick="confirmPayment('${order.id}')">Подтвердить оплату</button>` : 
+                `<button class="btn-secondary" onclick="resendTicket('${order.id}')">Переслать билет</button>`
             }
+            <button class="btn-danger" onclick="deleteOrderConfirm('${order.id}')">Удалить</button>
         </div>
     `;
     
@@ -229,15 +365,19 @@ function createAdminOrderCard(order) {
 // Загрузка гостей
 function loadAdminGuests() {
     const guestsList = document.getElementById('adminGuestsList');
-    const eventFilter = document.getElementById('guestEventFilter').value;
+    const eventFilter = document.getElementById('guestEventFilter')?.value;
+    
+    if (!guestsList) return;
     
     if (!eventFilter) {
         guestsList.innerHTML = '<p class="loading">Выберите мероприятие для просмотра списка гостей</p>';
         return;
     }
     
-    const eventOrders = adminOrders.filter(order => 
-        order.eventId == eventFilter && order.status === 'paid'
+    // Получаем заказы из localStorage
+    const allOrders = getAllOrders();
+    const eventOrders = allOrders.filter(order => 
+        order.eventId == eventFilter && order.status === 'PAID'
     );
     
     if (eventOrders.length === 0) {
@@ -246,14 +386,19 @@ function loadAdminGuests() {
     }
     
     let guestsHtml = `
+        <div class="guests-header">
+            <h3>Список гостей (${eventOrders.length} заказов)</h3>
+            <button class="btn-secondary" onclick="exportGuestList()">Экспорт в Excel</button>
+        </div>
         <table class="guests-table">
             <thead>
                 <tr>
+                    <th>Заказ</th>
                     <th>Имя</th>
                     <th>Email</th>
                     <th>Телефон</th>
                     <th>Билеты</th>
-                    <th>QR-код</th>
+                    <th>Сумма</th>
                     <th>Статус входа</th>
                     <th>Действия</th>
                 </tr>
@@ -264,8 +409,32 @@ function loadAdminGuests() {
     eventOrders.forEach(order => {
         const ticketsInfo = order.tickets.map(t => `${t.type} x${t.quantity}`).join(', ');
         const checkedInStatus = order.checkedIn ? 
-            '<span class="checked-in">✓ Вошел</span>' : 
-            '<button class="check-in-btn" onclick="checkInGuest(' + order.id + ')">Отметить вход</button>';
+            `<span class="checked-in">✓ Вошел ${order.checkedInAt || ''}</span>` : 
+            `<button class="check-in-btn" onclick="checkInGuest('${order.id}')">Отметить вход</button>`;
+        
+        guestsHtml += `
+            <tr class="${order.checkedIn ? 'checked-in-row' : ''}">
+                <td>#${order.id}</td>
+                <td>${order.customer.name}</td>
+                <td>${order.customer.email}</td>
+                <td>${order.customer.phone}</td>
+                <td>${ticketsInfo}</td>
+                <td>${order.totalAmount}₽</td>
+                <td>${checkedInStatus}</td>
+                <td>
+                    <button class="btn-small" onclick="resendTicket('${order.id}')">Переслать билет</button>
+                </td>
+            </tr>
+        `;
+    });
+    
+    guestsHtml += `
+            </tbody>
+        </table>
+    `;
+    
+    guestsList.innerHTML = guestsHtml;
+}
         
         guestsHtml += `
             <tr>
@@ -426,25 +595,48 @@ function deleteEvent(eventId) {
 
 // Подтверждение оплаты
 function confirmPayment(orderId) {
-    const orderIndex = adminOrders.findIndex(o => o.id === orderId);
-    if (orderIndex !== -1) {
-        adminOrders[orderIndex].status = 'paid';
-        adminOrders[orderIndex].checkedIn = false;
-        loadAdminOrders();
+    if (updateOrderStatus(orderId, 'PAID')) {
         showNotification('Оплата подтверждена! Билет отправлен клиенту.', 'success');
+    } else {
+        showNotification('Ошибка при подтверждении оплаты', 'error');
     }
 }
 
 // Повторная отправка билета
 function resendTicket(orderId) {
-    showNotification('Билет повторно отправлен на email клиента', 'success');
+    const order = getAllOrders().find(o => o.id === orderId);
+    if (order) {
+        showNotification(`Билет повторно отправлен на email: ${order.customer.email}`, 'success');
+    } else {
+        showNotification('Заказ не найден', 'error');
+    }
+}
+
+// Подтверждение удаления заказа
+function deleteOrderConfirm(orderId) {
+    const order = getAllOrders().find(o => o.id === orderId);
+    if (!order) {
+        showNotification('Заказ не найден', 'error');
+        return;
+    }
+    
+    if (confirm(`Вы уверены, что хотите удалить заказ #${orderId}?\nКлиент: ${order.customer.name}\nСумма: ${order.totalAmount}₽`)) {
+        if (deleteOrder(orderId)) {
+            showNotification('Заказ успешно удален', 'success');
+        } else {
+            showNotification('Ошибка при удалении заказа', 'error');
+        }
+    }
 }
 
 // Отметка входа гостя
 function checkInGuest(orderId) {
-    const orderIndex = adminOrders.findIndex(o => o.id === orderId);
+    const orders = getAllOrders();
+    const orderIndex = orders.findIndex(o => o.id === orderId);
     if (orderIndex !== -1) {
-        adminOrders[orderIndex].checkedIn = true;
+        orders[orderIndex].checkedIn = true;
+        orders[orderIndex].checkedInAt = new Date().toLocaleString('ru-RU');
+        localStorage.setItem('eventTicketsOrders', JSON.stringify(orders));
         loadAdminGuests();
         showNotification('Гость отмечен как вошедший', 'success');
     }
@@ -505,6 +697,8 @@ function loadEventFilters() {
 // Сохранение настроек
 function saveSettings() {
     const settings = {
+        siteName: document.getElementById('siteName').value,
+        logoUrl: document.getElementById('logoUrl').value,
         bankName: document.getElementById('bankName').value,
         iban: document.getElementById('iban').value,
         bic: document.getElementById('bic').value,
@@ -513,6 +707,10 @@ function saveSettings() {
     
     // В реальном приложении здесь была бы отправка на сервер
     localStorage.setItem('eventTicketsSettings', JSON.stringify(settings));
+    
+    // Применяем настройки сразу
+    applyAdminSettings(settings);
+    
     showNotification('Настройки сохранены', 'success');
 }
 
@@ -556,3 +754,80 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// Экспорт списка гостей
+function exportGuestList() {
+    const eventFilter = document.getElementById('guestEventFilter')?.value;
+    if (!eventFilter) {
+        showNotification('Выберите мероприятие для экспорта', 'error');
+        return;
+    }
+    
+    const allOrders = getAllOrders();
+    const eventOrders = allOrders.filter(order => 
+        order.eventId == eventFilter && order.status === 'PAID'
+    );
+    
+    if (eventOrders.length === 0) {
+        showNotification('Нет данных для экспорта', 'error');
+        return;
+    }
+    
+    // Получаем название мероприятия
+    const eventTitle = eventOrders[0]?.eventTitle?.ru || 'Мероприятие';
+    
+    // Создаем CSV данные
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Заказ,Имя,Email,Телефон,Билеты,Сумма,Статус входа,Время входа\n";
+    
+    eventOrders.forEach(order => {
+        const ticketsInfo = order.tickets.map(t => `${t.type} x${t.quantity}`).join('; ');
+        const checkedInStatus = order.checkedIn ? 'Вошел' : 'Не вошел';
+        const checkedInTime = order.checkedInAt || '';
+        
+        csvContent += `#${order.id},"${order.customer.name}","${order.customer.email}","${order.customer.phone}","${ticketsInfo}",${order.totalAmount}₽,"${checkedInStatus}","${checkedInTime}"\n`;
+    });
+    
+    // Создаем и скачиваем файл
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `guests_${eventTitle}_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showNotification('Список гостей экспортирован', 'success');
+}
+
+// Функция для получения статистики заказов
+function getOrdersStatistics() {
+    const orders = getAllOrders();
+    
+    const stats = {
+        total: orders.length,
+        pending: orders.filter(o => o.status === 'PENDING').length,
+        paid: orders.filter(o => o.status === 'PAID').length,
+        expired: orders.filter(o => o.status === 'EXPIRED').length,
+        totalRevenue: orders.filter(o => o.status === 'PAID').reduce((sum, o) => sum + o.totalAmount, 0),
+        checkedIn: orders.filter(o => o.checkedIn).length
+    };
+    
+    return stats;
+}
+
+// Обновление статистики на дашборде
+function updateDashboardStats() {
+    const stats = getOrdersStatistics();
+    
+    // Обновляем элементы статистики, если они есть
+    const totalOrdersEl = document.getElementById('totalOrders');
+    const pendingOrdersEl = document.getElementById('pendingOrders');
+    const paidOrdersEl = document.getElementById('paidOrders');
+    const totalRevenueEl = document.getElementById('totalRevenue');
+    
+    if (totalOrdersEl) totalOrdersEl.textContent = stats.total;
+    if (pendingOrdersEl) pendingOrdersEl.textContent = stats.pending;
+    if (paidOrdersEl) paidOrdersEl.textContent = stats.paid;
+    if (totalRevenueEl) totalRevenueEl.textContent = `${stats.totalRevenue}₽`;
+}
