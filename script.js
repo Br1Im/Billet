@@ -345,48 +345,36 @@ function loadSiteSettings() {
     }
     
     // Применяем логотип, если указан
-    if (settings.logoUrl && !logoApplied) {
+    if (settings.logoUrl) {
         const logoElement = document.querySelector('.logo');
         if (logoElement) {
-            // Удаляем ВСЕ существующие изображения (и SVG, и IMG)
-            const existingImages = logoElement.querySelectorAll('img, svg');
-            existingImages.forEach(img => img.remove());
+            // Проверяем, есть ли уже кастомный логотип
+            const existingCustomLogo = logoElement.querySelector('img[data-custom-logo="true"]');
             
-            // Создаем новый элемент изображения
-            const logoImg = document.createElement('img');
-            logoImg.src = settings.logoUrl;
-            logoImg.alt = settings.siteName || 'Logo';
-            logoImg.style.height = '40px';
-            logoImg.style.marginRight = '10px';
-            logoImg.style.objectFit = 'contain';
-            
-            // Вставляем перед заголовком
-            const logoTitle = logoElement.querySelector('h1');
-            if (logoTitle) {
-                logoElement.insertBefore(logoImg, logoTitle);
-            }
-            
-            logoApplied = true; // Устанавливаем флаг
-        }
-    }
-    
-    if (settings.logoUrl) {
-        const logoContainer = document.querySelector('.logo');
-        if (logoContainer) {
-            const oldIcon = logoContainer.querySelector('.logo-icon');
-            if (oldIcon) oldIcon.style.display = 'none';
-            
-            // Проверяем, есть ли уже изображение логотипа
-            let logoImg = logoContainer.querySelector('.custom-logo');
-            if (!logoImg) {
-                logoImg = document.createElement('img');
-                logoImg.className = 'custom-logo';
+            if (!existingCustomLogo) {
+                // Удаляем SVG иконку
+                const svgIcon = logoElement.querySelector('svg');
+                if (svgIcon) svgIcon.remove();
+                
+                // Создаем новый элемент изображения с маркером
+                const logoImg = document.createElement('img');
+                logoImg.src = settings.logoUrl;
+                logoImg.alt = settings.siteName || 'Logo';
                 logoImg.style.height = '40px';
                 logoImg.style.marginRight = '10px';
-                logoContainer.insertBefore(logoImg, logoContainer.querySelector('h1'));
+                logoImg.style.objectFit = 'contain';
+                logoImg.setAttribute('data-custom-logo', 'true'); // Маркер для проверки
+                
+                // Вставляем перед заголовком
+                const logoTitle = logoElement.querySelector('h1');
+                if (logoTitle) {
+                    logoElement.insertBefore(logoImg, logoTitle);
+                }
+            } else {
+                // Обновляем существующий логотип
+                existingCustomLogo.src = settings.logoUrl;
+                existingCustomLogo.alt = settings.siteName || 'Logo';
             }
-            logoImg.src = settings.logoUrl;
-            logoImg.alt = settings.siteName || 'Logo';
         }
     }
 }
