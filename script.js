@@ -317,8 +317,7 @@ function initCursorFollower() {
 
 // Загрузка настроек сайта
 function loadSiteSettings() {
-    const settings = JSON.parse(localStorage.getItem('eventTicketsSettings')) || {};
-    
+    // Используем глобальные настройки, загруженные с сервера
     if (settings.siteName) {
         // Обновляем заголовок на странице
         const logoTitle = document.querySelector('.logo h1');
@@ -335,6 +334,32 @@ function loadSiteSettings() {
         const footerTitle = document.querySelector('.footer-section h4');
         if (footerTitle && footerTitle.textContent === 'EventTickets') {
             footerTitle.textContent = settings.siteName;
+        }
+    }
+    
+    // Применяем логотип, если указан
+    if (settings.logoUrl) {
+        const logoElement = document.querySelector('.logo');
+        if (logoElement) {
+            // Создаем элемент изображения
+            const logoImg = document.createElement('img');
+            logoImg.src = settings.logoUrl;
+            logoImg.alt = settings.siteName || 'Logo';
+            logoImg.style.height = '40px';
+            logoImg.style.marginRight = '10px';
+            logoImg.style.objectFit = 'contain';
+            
+            // Вставляем перед заголовком
+            const logoTitle = logoElement.querySelector('h1');
+            if (logoTitle) {
+                // Проверяем, нет ли уже логотипа
+                const existingLogo = logoElement.querySelector('img');
+                if (existingLogo) {
+                    existingLogo.src = settings.logoUrl;
+                } else {
+                    logoElement.insertBefore(logoImg, logoTitle);
+                }
+            }
         }
     }
     

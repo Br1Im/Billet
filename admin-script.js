@@ -510,6 +510,7 @@ async function loadSettings() {
             const settings = await response.json();
             
             if (settings.siteName) document.getElementById('siteName').value = settings.siteName;
+            if (settings.logoUrl) document.getElementById('logoUrl').value = settings.logoUrl;
             if (settings.bankName) document.getElementById('bankName').value = settings.bankName;
             if (settings.bankIban) document.getElementById('iban').value = settings.bankIban;
             if (settings.bankBic) document.getElementById('bic').value = settings.bankBic;
@@ -531,6 +532,7 @@ function loadSettingsFromLocalStorage() {
     const settings = JSON.parse(localStorage.getItem('eventTicketsSettings')) || {};
     
     if (settings.siteName) document.getElementById('siteName').value = settings.siteName;
+    if (settings.logoUrl) document.getElementById('logoUrl').value = settings.logoUrl;
     if (settings.bankName) document.getElementById('bankName').value = settings.bankName;
     if (settings.iban) document.getElementById('iban').value = settings.iban;
     if (settings.bic) document.getElementById('bic').value = settings.bic;
@@ -543,8 +545,39 @@ function loadSettingsFromLocalStorage() {
 // Применение настроек к админке
 function applyAdminSettings(settings) {
     if (settings.siteName) {
-        document.querySelector('.admin-logo h2').textContent = settings.siteName;
+        // Обновляем все места с названием сайта
+        const logoElements = document.querySelectorAll('.admin-logo h2');
+        logoElements.forEach(el => {
+            el.textContent = settings.siteName;
+        });
         document.title = `Админ-панель - ${settings.siteName}`;
+    }
+    
+    // Применяем логотип, если указан
+    if (settings.logoUrl) {
+        const logoElements = document.querySelectorAll('.admin-logo');
+        logoElements.forEach(logoElement => {
+            // Проверяем, нет ли уже логотипа
+            let logoImg = logoElement.querySelector('img');
+            
+            if (!logoImg) {
+                // Создаем элемент изображения
+                logoImg = document.createElement('img');
+                logoImg.style.height = '32px';
+                logoImg.style.marginBottom = '8px';
+                logoImg.style.objectFit = 'contain';
+                logoImg.style.display = 'block';
+                
+                // Вставляем перед заголовком
+                const logoTitle = logoElement.querySelector('h2');
+                if (logoTitle) {
+                    logoElement.insertBefore(logoImg, logoTitle);
+                }
+            }
+            
+            logoImg.src = settings.logoUrl;
+            logoImg.alt = settings.siteName || 'Logo';
+        });
     }
 }
 
@@ -1246,6 +1279,7 @@ function loadEventFilters() {
 async function saveSettings() {
     const settings = {
         siteName: document.getElementById('siteName').value,
+        logoUrl: document.getElementById('logoUrl').value,
         bankName: document.getElementById('bankName').value,
         bankIban: document.getElementById('iban').value,
         bankBic: document.getElementById('bic').value,

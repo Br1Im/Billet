@@ -17,6 +17,7 @@ router.get('/', async (req, res) => {
         // Публичные настройки (без чувствительных данных)
         const publicSettings = {
             siteName: settingsObj.siteName || 'EventTickets',
+            logoUrl: settingsObj.logoUrl || '',
             contactEmail: settingsObj.contactEmail || 'info@eventtickets.com',
             contactPhone: settingsObj.contactPhone || '+7 (999) 123-45-67'
         };
@@ -42,6 +43,7 @@ router.get('/admin', authenticateToken, async (req, res) => {
         // Все настройки для админа
         const adminSettings = {
             siteName: settingsObj.siteName || 'EventTickets',
+            logoUrl: settingsObj.logoUrl || '',
             bankName: settingsObj.bankName || 'Сбербанк России',
             bankIban: settingsObj.bankIban || 'RU1234567890123456789012',
             bankBic: settingsObj.bankBic || 'SBERRU2P',
@@ -65,7 +67,7 @@ router.put('/', authenticateToken, async (req, res) => {
 
         // Список разрешенных настроек
         const allowedSettings = [
-            'siteName', 'bankName', 'bankIban', 'bankBic', 'bankRecipient',
+            'siteName', 'logoUrl', 'bankName', 'bankIban', 'bankBic', 'bankRecipient',
             'contactEmail', 'contactPhone'
         ];
 
