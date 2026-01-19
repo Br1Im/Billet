@@ -67,8 +67,7 @@ router.put('/', authenticateToken, async (req, res) => {
 
         // Список разрешенных настроек
         const allowedSettings = [
-            'siteName', 'logoUrl', 'contactEmail', 'contactPhone', 'contactAddress',
-            'socialFacebook', 'socialInstagram', 'socialTwitter'
+            'siteName', 'logoUrl', 'contactEmail', 'contactPhone', 'contactAddress'
         ];
 
         // Обновляем каждую настройку

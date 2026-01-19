@@ -514,9 +514,6 @@ async function loadSettings() {
             if (settings.contactEmail) document.getElementById('contactEmail').value = settings.contactEmail;
             if (settings.contactPhone) document.getElementById('contactPhone').value = settings.contactPhone;
             if (settings.contactAddress) document.getElementById('contactAddress').value = settings.contactAddress;
-            if (settings.socialFacebook) document.getElementById('socialFacebook').value = settings.socialFacebook;
-            if (settings.socialInstagram) document.getElementById('socialInstagram').value = settings.socialInstagram;
-            if (settings.socialTwitter) document.getElementById('socialTwitter').value = settings.socialTwitter;
             
             // Применяем настройки к админке
             applyAdminSettings(settings);
@@ -1285,10 +1282,7 @@ async function saveSettings() {
         logoUrl: document.getElementById('logoUrl').value,
         contactEmail: document.getElementById('contactEmail').value,
         contactPhone: document.getElementById('contactPhone').value,
-        contactAddress: document.getElementById('contactAddress').value,
-        socialFacebook: document.getElementById('socialFacebook').value,
-        socialInstagram: document.getElementById('socialInstagram').value,
-        socialTwitter: document.getElementById('socialTwitter').value
+        contactAddress: document.getElementById('contactAddress').value
     };
     
     try {
