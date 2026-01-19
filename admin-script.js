@@ -556,27 +556,25 @@ function applyAdminSettings(settings) {
     if (settings.logoUrl) {
         const logoElements = document.querySelectorAll('.admin-logo');
         logoElements.forEach(logoElement => {
-            // Проверяем, нет ли уже логотипа
-            let logoImg = logoElement.querySelector('img.custom-logo');
+            // Удаляем ВСЕ существующие изображения
+            const existingImages = logoElement.querySelectorAll('img');
+            existingImages.forEach(img => img.remove());
             
-            if (!logoImg) {
-                // Создаем элемент изображения
-                logoImg = document.createElement('img');
-                logoImg.className = 'custom-logo';
-                logoImg.style.height = '32px';
-                logoImg.style.marginBottom = '8px';
-                logoImg.style.objectFit = 'contain';
-                logoImg.style.display = 'block';
-                
-                // Вставляем перед заголовком
-                const logoTitle = logoElement.querySelector('h2');
-                if (logoTitle) {
-                    logoElement.insertBefore(logoImg, logoTitle);
-                }
-            }
-            
+            // Создаем новый элемент изображения
+            const logoImg = document.createElement('img');
+            logoImg.className = 'custom-logo';
             logoImg.src = settings.logoUrl;
             logoImg.alt = settings.siteName || 'Logo';
+            logoImg.style.height = '32px';
+            logoImg.style.marginBottom = '8px';
+            logoImg.style.objectFit = 'contain';
+            logoImg.style.display = 'block';
+            
+            // Вставляем перед заголовком
+            const logoTitle = logoElement.querySelector('h2');
+            if (logoTitle) {
+                logoElement.insertBefore(logoImg, logoTitle);
+            }
         });
     }
 }

@@ -347,31 +347,23 @@ function loadSiteSettings() {
     if (settings.logoUrl) {
         const logoElement = document.querySelector('.logo');
         if (logoElement) {
-            // Удаляем SVG иконку, если есть
-            const svgIcon = logoElement.querySelector('.logo-icon');
-            if (svgIcon) {
-                svgIcon.remove();
-            }
+            // Удаляем ВСЕ существующие изображения (и SVG, и IMG)
+            const existingImages = logoElement.querySelectorAll('img, svg');
+            existingImages.forEach(img => img.remove());
             
-            // Проверяем, нет ли уже логотипа
-            let logoImg = logoElement.querySelector('img');
-            
-            if (!logoImg) {
-                // Создаем элемент изображения
-                logoImg = document.createElement('img');
-                logoImg.style.height = '40px';
-                logoImg.style.marginRight = '10px';
-                logoImg.style.objectFit = 'contain';
-                
-                // Вставляем перед заголовком
-                const logoTitle = logoElement.querySelector('h1');
-                if (logoTitle) {
-                    logoElement.insertBefore(logoImg, logoTitle);
-                }
-            }
-            
+            // Создаем новый элемент изображения
+            const logoImg = document.createElement('img');
             logoImg.src = settings.logoUrl;
             logoImg.alt = settings.siteName || 'Logo';
+            logoImg.style.height = '40px';
+            logoImg.style.marginRight = '10px';
+            logoImg.style.objectFit = 'contain';
+            
+            // Вставляем перед заголовком
+            const logoTitle = logoElement.querySelector('h1');
+            if (logoTitle) {
+                logoElement.insertBefore(logoImg, logoTitle);
+            }
         }
     }
     
