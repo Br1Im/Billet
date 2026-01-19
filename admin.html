@@ -160,24 +160,35 @@
                             <input type="text" id="logoUrl" class="form-control" placeholder="https://example.com/logo.png">
                             <small class="form-text text-muted">Поддерживаются ссылки на изображения (png, jpg, svg)</small>
                         </div>
-
-                        <h3>Банковские реквизиты</h3>
+                        
+                        <h3>Контактная информация</h3>
                         <div class="form-group">
-                            <label for="bankName">Название банка</label>
-                            <input type="text" id="bankName" class="form-control" value="Сбербанк России">
+                            <label for="contactEmail">Email для связи</label>
+                            <input type="email" id="contactEmail" class="form-control" placeholder="info@eventtickets.com">
                         </div>
                         <div class="form-group">
-                            <label for="iban">IBAN</label>
-                            <input type="text" id="iban" class="form-control" value="RU1234567890123456789012">
+                            <label for="contactPhone">Телефон</label>
+                            <input type="tel" id="contactPhone" class="form-control" placeholder="+33 1 23 45 67 89">
                         </div>
                         <div class="form-group">
-                            <label for="bic">BIC</label>
-                            <input type="text" id="bic" class="form-control" value="SABRRUMM">
+                            <label for="contactAddress">Адрес</label>
+                            <input type="text" id="contactAddress" class="form-control" placeholder="123 Rue de Paris, 75001 Paris">
+                        </div>
+                        
+                        <h3>Социальные сети</h3>
+                        <div class="form-group">
+                            <label for="socialFacebook">Facebook</label>
+                            <input type="url" id="socialFacebook" class="form-control" placeholder="https://facebook.com/yourpage">
                         </div>
                         <div class="form-group">
-                            <label for="accountHolder">Получатель</label>
-                            <input type="text" id="accountHolder" class="form-control" value="ООО «EventTickets»">
+                            <label for="socialInstagram">Instagram</label>
+                            <input type="url" id="socialInstagram" class="form-control" placeholder="https://instagram.com/yourpage">
                         </div>
+                        <div class="form-group">
+                            <label for="socialTwitter">Twitter/X</label>
+                            <input type="url" id="socialTwitter" class="form-control" placeholder="https://twitter.com/yourpage">
+                        </div>
+                        
                         <button class="btn-primary" onclick="saveSettings()">Сохранить настройки</button>
                     </div>
                 </section>

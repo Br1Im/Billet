@@ -2,9 +2,15 @@
 let events = [];
 let settings = {
     siteName: "EventTickets",
+    currency: "€",
     contactEmail: "info@eventtickets.com",
     contactPhone: "+7 (999) 123-45-67"
 };
+
+// Функция форматирования цены
+function formatPrice(price) {
+    return `${price} ${settings.currency}`;
+}
 
 // API базовый URL
 const API_BASE = window.location.origin + '/api';
