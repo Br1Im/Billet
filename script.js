@@ -6,6 +6,7 @@ let settings = {
     contactEmail: "info@eventtickets.com",
     contactPhone: "+7 (999) 123-45-67"
 };
+let logoApplied = false; // Флаг для предотвращения дублирования логотипа
 
 // Функция форматирования цены
 function formatPrice(price) {
@@ -344,7 +345,7 @@ function loadSiteSettings() {
     }
     
     // Применяем логотип, если указан
-    if (settings.logoUrl) {
+    if (settings.logoUrl && !logoApplied) {
         const logoElement = document.querySelector('.logo');
         if (logoElement) {
             // Удаляем ВСЕ существующие изображения (и SVG, и IMG)
@@ -364,6 +365,8 @@ function loadSiteSettings() {
             if (logoTitle) {
                 logoElement.insertBefore(logoImg, logoTitle);
             }
+            
+            logoApplied = true; // Устанавливаем флаг
         }
     }
     
