@@ -560,11 +560,12 @@ function applyAdminSettings(settings) {
         const logoElements = document.querySelectorAll('.admin-logo');
         logoElements.forEach(logoElement => {
             // Проверяем, нет ли уже логотипа
-            let logoImg = logoElement.querySelector('img');
+            let logoImg = logoElement.querySelector('img.custom-logo');
             
             if (!logoImg) {
                 // Создаем элемент изображения
                 logoImg = document.createElement('img');
+                logoImg.className = 'custom-logo';
                 logoImg.style.height = '32px';
                 logoImg.style.marginBottom = '8px';
                 logoImg.style.objectFit = 'contain';
