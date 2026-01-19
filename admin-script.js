@@ -511,10 +511,12 @@ async function loadSettings() {
             
             if (settings.siteName) document.getElementById('siteName').value = settings.siteName;
             if (settings.logoUrl) document.getElementById('logoUrl').value = settings.logoUrl;
-            if (settings.bankName) document.getElementById('bankName').value = settings.bankName;
-            if (settings.bankIban) document.getElementById('iban').value = settings.bankIban;
-            if (settings.bankBic) document.getElementById('bic').value = settings.bankBic;
-            if (settings.bankRecipient) document.getElementById('accountHolder').value = settings.bankRecipient;
+            if (settings.contactEmail) document.getElementById('contactEmail').value = settings.contactEmail;
+            if (settings.contactPhone) document.getElementById('contactPhone').value = settings.contactPhone;
+            if (settings.contactAddress) document.getElementById('contactAddress').value = settings.contactAddress;
+            if (settings.socialFacebook) document.getElementById('socialFacebook').value = settings.socialFacebook;
+            if (settings.socialInstagram) document.getElementById('socialInstagram').value = settings.socialInstagram;
+            if (settings.socialTwitter) document.getElementById('socialTwitter').value = settings.socialTwitter;
             
             // Применяем настройки к админке
             applyAdminSettings(settings);
@@ -664,7 +666,7 @@ function createAdminEventCard(event) {
     // Поддержка обоих форматов: старого (t.type - строка) и нового (t.type - объект)
     const ticketTypes = event.tickets.map(t => {
         const ticketType = typeof t.type === 'string' ? t.type : (t.type?.ru || t.type);
-        return `${ticketType}: ${t.price}₽`;
+        return `${ticketType}: ${t.price}€`;
     }).join(', ');
     
     card.innerHTML = `
@@ -739,7 +741,7 @@ function createAdminOrderCard(order) {
         minute: '2-digit'
     });
     
-    const ticketsInfo = order.tickets.map(t => `${t.type} x${t.quantity} (${t.price}₽)`).join(', ');
+    const ticketsInfo = order.tickets.map(t => `${t.type} x${t.quantity} (${t.price}€)`).join(', ');
     
     const statusClasses = {
         PENDING: 'status-pending',
@@ -778,7 +780,7 @@ function createAdminOrderCard(order) {
             </div>
             <div class="order-details">
                 <div><strong>Билеты:</strong> ${ticketsInfo}</div>
-                <div><strong>Сумма:</strong> ${order.totalAmount}₽</div>
+                <div><strong>Сумма:</strong> ${order.totalAmount}€</div>
                 <div><strong>Способ оплаты:</strong> ${paymentMethodTexts[order.paymentMethod]}</div>
                 <div><strong>Дата заказа:</strong> ${orderDate}</div>
             </div>
@@ -859,7 +861,7 @@ async function loadAdminGuests() {
                 <td>${order.customer.email}</td>
                 <td>${order.customer.phone}</td>
                 <td>${ticketsInfo}</td>
-                <td>${order.totalAmount}₽</td>
+                <td>${order.totalAmount}€</td>
                 <td>${checkedInStatus}</td>
                 <td>
                     <button class="btn-small" onclick="resendTicket('${order.id}')">Переслать билет</button>
@@ -906,7 +908,7 @@ async function loadAdminGuests() {
                     </div>
                     <div class="guest-detail">
                         <strong>Сумма</strong>
-                        ${order.totalAmount}₽
+                        ${order.totalAmount}€
                     </div>
                     <div class="guest-detail" style="grid-column: 1 / -1;">
                         <strong>Билеты</strong>
@@ -1200,7 +1202,7 @@ async function deleteOrderConfirm(orderId) {
         return;
     }
     
-    if (confirm(`Вы уверены, что хотите удалить заказ #${orderId}?\nКлиент: ${order.customer.name}\nСумма: ${order.totalAmount}₽`)) {
+    if (confirm(`Вы уверены, что хотите удалить заказ #${orderId}?\nКлиент: ${order.customer.name}\nСумма: ${order.totalAmount}€`)) {
         const success = await deleteOrder(orderId);
         if (success) {
             showNotification('Заказ успешно удален', 'success');
@@ -1280,10 +1282,12 @@ async function saveSettings() {
     const settings = {
         siteName: document.getElementById('siteName').value,
         logoUrl: document.getElementById('logoUrl').value,
-        bankName: document.getElementById('bankName').value,
-        bankIban: document.getElementById('iban').value,
-        bankBic: document.getElementById('bic').value,
-        bankRecipient: document.getElementById('accountHolder').value
+        contactEmail: document.getElementById('contactEmail').value,
+        contactPhone: document.getElementById('contactPhone').value,
+        contactAddress: document.getElementById('contactAddress').value,
+        socialFacebook: document.getElementById('socialFacebook').value,
+        socialInstagram: document.getElementById('socialInstagram').value,
+        socialTwitter: document.getElementById('socialTwitter').value
     };
     
     try {
@@ -1385,7 +1389,7 @@ async function exportGuestList() {
         const checkedInStatus = order.checkedIn ? 'Вошел' : 'Не вошел';
         const checkedInTime = order.checkedInAt || '';
         
-        csvContent += `#${order.id},"${order.customer.name}","${order.customer.email}","${order.customer.phone}","${ticketsInfo}",${order.totalAmount}₽,"${checkedInStatus}","${checkedInTime}"\n`;
+        csvContent += `#${order.id},"${order.customer.name}","${order.customer.email}","${order.customer.phone}","${ticketsInfo}",${order.totalAmount}€,"${checkedInStatus}","${checkedInTime}"\n`;
     });
     
     // Создаем и скачиваем файл
@@ -1429,5 +1433,5 @@ async function updateDashboardStats() {
     if (totalOrdersEl) totalOrdersEl.textContent = stats.total;
     if (pendingOrdersEl) pendingOrdersEl.textContent = stats.pending;
     if (paidOrdersEl) paidOrdersEl.textContent = stats.paid;
-    if (totalRevenueEl) totalRevenueEl.textContent = `${stats.totalRevenue}₽`;
+    if (totalRevenueEl) totalRevenueEl.textContent = `${stats.totalRevenue}€`;
 }

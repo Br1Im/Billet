@@ -445,7 +445,7 @@ function createEventCard(event) {
             <h3 class="event-title">${title}</h3>
             <div class="event-date">${eventDate} в ${event.time}</div>
             <div class="event-location">${location}</div>
-            <div class="event-price">${fromText} ${minPrice} ₽</div>
+            <div class="event-price">${fromText} ${minPrice} €</div>
         </div>
     `;
     
@@ -520,7 +520,7 @@ function createEventDetailPage(event) {
                                 <h3>${translations[currentLang].selectTickets}</h3>
                                 ${event.tickets.map(ticket => createTicketSelector(ticket)).join('')}
                                 <div class="total-section">
-                                    <div class="total-price" id="totalPrice">${translations[currentLang].total}: 0 ₽</div>
+                                    <div class="total-price" id="totalPrice">${translations[currentLang].total}: 0 €</div>
                                     <button class="btn-primary" onclick="showOrderForm()" id="orderBtn" disabled>
                                         ${translations[currentLang].orderTickets}
                                     </button>
@@ -582,7 +582,7 @@ function createTicketSelector(ticket) {
         <div class="ticket-type">
             <div class="ticket-info">
                 <h4>${ticketType}</h4>
-                <div class="ticket-price">${ticket.price} ₽</div>
+                <div class="ticket-price">${ticket.price} €</div>
             </div>
             <div class="quantity-control">
                 <button type="button" class="qty-btn" onclick="changeQuantity('${ticketType}', -1)">−</button>
@@ -650,7 +650,7 @@ function updateTotal() {
         }
     });
     
-    document.getElementById('totalPrice').textContent = `${translations[currentLang].total}: ${total} ₽`;
+    document.getElementById('totalPrice').textContent = `${translations[currentLang].total}: ${total} €`;
     document.getElementById('orderBtn').disabled = !hasItems;
 }
 
@@ -894,7 +894,7 @@ function showSuccessMessage(order) {
                     <h4>Заказ №${order.id}</h4>
                     <p><strong>Мероприятие:</strong> ${order.eventTitle[currentLang]}</p>
                     <p><strong>Дата:</strong> ${new Date(order.eventDate).toLocaleDateString(currentLang === 'ru' ? 'ru-RU' : 'fr-FR')} в ${order.eventTime}</p>
-                    <p><strong>Сумма:</strong> ${order.totalAmount} ₽</p>
+                    <p><strong>Сумма:</strong> ${order.totalAmount} €</p>
                     <p><strong>Статус:</strong> Ожидает оплаты</p>
                 </div>
                 <div class="success-text">
@@ -1016,7 +1016,7 @@ function updatePageTexts() {
     const totalPrice = document.getElementById('totalPrice');
     if (totalPrice) {
         const currentTotal = totalPrice.textContent.match(/\d+/);
-        totalPrice.textContent = `${t.total}: ${currentTotal ? currentTotal[0] : '0'} ₽`;
+        totalPrice.textContent = `${t.total}: ${currentTotal ? currentTotal[0] : '0'} €`;
     }
     
     const orderBtn = document.getElementById('orderBtn');

@@ -67,8 +67,8 @@ router.put('/', authenticateToken, async (req, res) => {
 
         // Список разрешенных настроек
         const allowedSettings = [
-            'siteName', 'logoUrl', 'bankName', 'bankIban', 'bankBic', 'bankRecipient',
-            'contactEmail', 'contactPhone'
+            'siteName', 'logoUrl', 'contactEmail', 'contactPhone', 'contactAddress',
+            'socialFacebook', 'socialInstagram', 'socialTwitter'
         ];
 
         // Обновляем каждую настройку
